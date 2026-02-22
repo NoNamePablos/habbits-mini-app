@@ -19,6 +19,7 @@
     "monthLabel": "За месяц",
     "bestStreak": "Лучший стрик",
     "activeHabits": "Активных",
+    "streakFreezes": "Заморозки",
     "achievements": "Достижения",
     "activity": "Активность",
     "weeklyProgress": "Прогресс за неделю"
@@ -113,6 +114,10 @@
     "habitCreated": "Привычка создана",
     "habitUpdated": "Привычка обновлена",
     "habitDeleted": "Привычка удалена"
+  },
+  "streakFreeze": {
+    "used": "Заморозка защитила ваш стрик!",
+    "earned": "Получена заморозка стрика!"
   },
   "info": {
     "title": "Информация"

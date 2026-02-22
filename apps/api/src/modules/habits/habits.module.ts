@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Habit } from './entities/habit.entity';
 import { HabitCompletion } from './entities/habit-completion.entity';
+import { User } from '../users/entities/user.entity';
 import { HabitsService } from './habits.service';
 import { HabitsController } from './habits.controller';
 import { UsersModule } from '../users/users.module';
@@ -10,7 +11,7 @@ import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Habit, HabitCompletion]),
+    TypeOrmModule.forFeature([Habit, HabitCompletion, User]),
     UsersModule,
     GamificationModule,
     AchievementsModule,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { User, Zap, Flame, Trophy, Calendar, Target, Award, ChevronRight } from 'lucide-vue-next'
+import { User, Zap, Flame, Trophy, Calendar, Target, Award, ChevronRight, Snowflake } from 'lucide-vue-next'
+import { MAX_STREAK_FREEZES } from '~/constants'
 
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
@@ -89,6 +90,20 @@ onMounted(async () => {
         </CardContent>
       </Card>
     </div>
+
+    <Card>
+      <CardContent class="pt-4 pb-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <Snowflake class="h-4 w-4 text-blue-500" />
+            <span class="text-sm font-medium">{{ $t('profile.streakFreezes') }}</span>
+          </div>
+          <Badge variant="secondary" class="text-xs">
+            {{ gamificationStore.streakFreezes }}/{{ MAX_STREAK_FREEZES }}
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
 
     <Card>
       <CardContent class="pt-4 pb-4">

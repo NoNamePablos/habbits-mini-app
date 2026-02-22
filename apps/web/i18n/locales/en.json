@@ -19,6 +19,7 @@
     "monthLabel": "This month",
     "bestStreak": "Best streak",
     "activeHabits": "Active",
+    "streakFreezes": "Streak Freezes",
     "achievements": "Achievements",
     "activity": "Activity",
     "weeklyProgress": "Weekly progress"
@@ -113,6 +114,10 @@
     "habitCreated": "Habit created",
     "habitUpdated": "Habit updated",
     "habitDeleted": "Habit deleted"
+  },
+  "streakFreeze": {
+    "used": "Streak freeze protected your streak!",
+    "earned": "You earned a streak freeze!"
   },
   "info": {
     "title": "Info"

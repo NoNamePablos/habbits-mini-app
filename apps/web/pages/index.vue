@@ -6,7 +6,7 @@ const authStore = useAuthStore()
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
 const { hapticNotification } = useTelegram()
-const { showSuccess } = useErrorHandler()
+const { showSuccess, showInfo } = useErrorHandler()
 
 const showCreateForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
@@ -29,6 +29,13 @@ const onToggle = async (habitId: number): Promise<void> => {
       hapticNotification('success')
 
       await gamificationStore.refreshAfterCompletion()
+
+      if (result.freezeUsed) {
+        showInfo('streakFreeze.used')
+      }
+      if (result.freezeEarned) {
+        showSuccess('streakFreeze.earned')
+      }
 
       if (result.leveledUp) {
         levelUpLevel.value = result.newLevel

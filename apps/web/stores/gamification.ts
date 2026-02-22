@@ -14,6 +14,7 @@ export const useGamificationStore = defineStore('gamification', () => {
   const progressPercent = computed<number>(() => toValue(profile)?.progressPercent ?? GAMIFICATION_DEFAULTS.progressPercent)
   const xpForNextLevel = computed<number>(() => toValue(profile)?.xpForNextLevel ?? GAMIFICATION_DEFAULTS.xpForNextLevel)
   const xpForCurrentLevel = computed<number>(() => toValue(profile)?.xpForCurrentLevel ?? GAMIFICATION_DEFAULTS.xpForCurrentLevel)
+  const streakFreezes = computed<number>(() => toValue(profile)?.streakFreezes ?? 0)
 
   const unlockedCount = computed<number>(() =>
     toValue(achievements).filter((a) => a.unlocked).length,
@@ -55,6 +56,7 @@ export const useGamificationStore = defineStore('gamification', () => {
     progressPercent,
     xpForNextLevel,
     xpForCurrentLevel,
+    streakFreezes,
     unlockedCount,
     totalCount,
     fetchProfile,

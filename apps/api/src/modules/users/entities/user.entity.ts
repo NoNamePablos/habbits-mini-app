@@ -31,6 +31,9 @@ export class User extends BaseEntity {
   @Column({ default: 0 })
   streakFreezes: number;
 
+  @Column({ type: 'date', nullable: true, default: null })
+  lastFreezeUsedDate: string | null;
+
   @Column({ default: 'UTC', length: 50 })
   timezone: string;
 }

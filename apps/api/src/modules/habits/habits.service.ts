@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Habit } from './entities/habit.entity';
 import { HabitCompletion } from './entities/habit-completion.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
@@ -15,10 +16,17 @@ import { AchievementsService } from '../achievements/achievements.service';
 import { Achievement } from '../achievements/entities/achievement.entity';
 
 const XP_PER_COMPLETION = 10;
+const MAX_STREAK_FREEZES = 3;
+const STREAK_FREEZE_EARN_INTERVAL = 7;
 
 interface UnlockedAchievementInfo {
   achievement: Achievement;
   xpAwarded: number;
+}
+
+interface StreakResult {
+  newStreak: number;
+  freezeUsed: boolean;
 }
 
 interface CompletionResult {
@@ -29,6 +37,9 @@ interface CompletionResult {
   leveledUp: boolean;
   newLevel: number;
   unlockedAchievements: UnlockedAchievementInfo[];
+  freezeUsed: boolean;
+  freezeEarned: boolean;
+  streakFreezes: number;
 }
 
 @Injectable()
@@ -38,6 +49,8 @@ export class HabitsService {
     private readonly habitsRepo: Repository<Habit>,
     @InjectRepository(HabitCompletion)
     private readonly completionsRepo: Repository<HabitCompletion>,
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
     private readonly dataSource: DataSource,
     private readonly gamificationService: GamificationService,
     private readonly achievementsService: AchievementsService,
@@ -92,6 +105,7 @@ export class HabitsService {
     timezone: string = 'UTC',
   ): Promise<CompletionResult> {
     const habit = await this.findOneOrFail(id, userId);
+    const user = await this.usersRepo.findOneByOrFail({ id: userId });
     const today = this.getTodayDate(timezone);
 
     const existing = await this.completionsRepo.findOne({
@@ -101,11 +115,28 @@ export class HabitsService {
       throw new ConflictException('Already completed today');
     }
 
-    // Calculate streak
-    const streakData = await this.calculateStreak(id, today);
+    // Calculate streak (with freeze support)
+    const yesterday = this.addDays(today, -1);
+    const streakData = await this.calculateStreak(habit, user, today);
     habit.currentStreak = streakData.newStreak;
     if (habit.currentStreak > habit.bestStreak) {
       habit.bestStreak = habit.currentStreak;
+    }
+
+    // Apply freeze consumption
+    if (streakData.freezeUsed) {
+      user.streakFreezes -= 1;
+      user.lastFreezeUsedDate = yesterday;
+    }
+
+    // Check if freeze is earned (streak hit a multiple of 7)
+    const freezeEarned =
+      habit.currentStreak > 0 &&
+      habit.currentStreak % STREAK_FREEZE_EARN_INTERVAL === 0 &&
+      user.streakFreezes < MAX_STREAK_FREEZES;
+
+    if (freezeEarned) {
+      user.streakFreezes += 1;
     }
 
     // XP calculation
@@ -121,10 +152,13 @@ export class HabitsService {
       xpEarned: xpEarned + streakBonusXp,
     });
 
-    // Save completion + habit in a transaction
+    // Save completion + habit + user in a transaction
     await this.dataSource.transaction(async (manager) => {
       await manager.save(completion);
       await manager.save(habit);
+      if (streakData.freezeUsed || freezeEarned) {
+        await manager.save(user);
+      }
     });
 
     // Award XP via gamification engine
@@ -152,6 +186,9 @@ export class HabitsService {
       leveledUp: xpResult.leveledUp,
       newLevel: xpResult.newLevel,
       unlockedAchievements,
+      freezeUsed: streakData.freezeUsed,
+      freezeEarned,
+      streakFreezes: user.streakFreezes,
     };
   }
 
@@ -184,20 +221,32 @@ export class HabitsService {
   }
 
   private async calculateStreak(
-    habitId: number,
+    habit: Habit,
+    user: User,
     today: string,
-  ): Promise<{ newStreak: number }> {
+  ): Promise<StreakResult> {
     const yesterday = this.addDays(today, -1);
     const yesterdayCompletion = await this.completionsRepo.findOne({
-      where: { habitId, completedDate: yesterday },
+      where: { habitId: habit.id, completedDate: yesterday },
     });
 
+    // Yesterday was completed — streak continues normally
     if (yesterdayCompletion) {
-      const habit = await this.habitsRepo.findOneByOrFail({ id: habitId });
-      return { newStreak: habit.currentStreak + 1 };
+      return { newStreak: habit.currentStreak + 1, freezeUsed: false };
     }
 
-    return { newStreak: 1 };
+    // Another habit already consumed a freeze for yesterday — benefit from it
+    if (user.lastFreezeUsedDate === yesterday) {
+      return { newStreak: habit.currentStreak + 1, freezeUsed: false };
+    }
+
+    // No completion yesterday — try to use a freeze (only if streak exists)
+    if (habit.currentStreak > 0 && user.streakFreezes > 0) {
+      return { newStreak: habit.currentStreak + 1, freezeUsed: true };
+    }
+
+    // Streak breaks
+    return { newStreak: 1, freezeUsed: false };
   }
 
   private async recalculateStreak(habitId: number): Promise<number> {

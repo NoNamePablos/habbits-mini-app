@@ -69,6 +69,9 @@ export interface CompleteResponse {
   leveledUp: boolean
   newLevel: number
   unlockedAchievements: { achievement: { id: number; key: string; name: string; icon: string | null; xpReward: number }; xpAwarded: number }[]
+  freezeUsed: boolean
+  freezeEarned: boolean
+  streakFreezes: number
 }
 
 export interface CreateHabitPayload {

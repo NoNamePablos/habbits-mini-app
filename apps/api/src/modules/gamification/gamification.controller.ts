@@ -10,6 +10,7 @@ interface GamificationProfileResponse {
   xpForCurrentLevel: number;
   xpForNextLevel: number;
   progressPercent: number;
+  streakFreezes: number;
 }
 
 @Controller('gamification')

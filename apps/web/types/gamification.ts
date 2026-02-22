@@ -26,6 +26,7 @@ export interface GamificationProfile {
   xpForCurrentLevel: number
   xpForNextLevel: number
   progressPercent: number
+  streakFreezes: number
 }
 
 export interface UnlockedAchievement {

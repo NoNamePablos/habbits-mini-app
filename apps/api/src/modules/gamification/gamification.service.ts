@@ -10,6 +10,7 @@ interface GamificationProfile {
   xpForCurrentLevel: number;
   xpForNextLevel: number;
   progressPercent: number;
+  streakFreezes: number;
 }
 
 interface XpResult {
@@ -67,6 +68,7 @@ export class GamificationService {
       xpForCurrentLevel,
       xpForNextLevel,
       progressPercent,
+      streakFreezes: user.streakFreezes,
     };
   }
 
