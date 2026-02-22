@@ -1,0 +1,23 @@
+{
+  "name": "habits-app",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "build:api": "npm run build -w apps/api",
+    "build:web": "npm run build -w apps/web",
+    "lint": "npm run lint:api && npm run lint:web",
+    "lint:api": "npm run lint -w apps/api",
+    "lint:web": "npm run lint -w apps/web",
+    "lint:fix": "npm run lint:fix:api && npm run lint:fix:web",
+    "lint:fix:api": "npm run lint -- --fix -w apps/api",
+    "lint:fix:web": "npm run lint -- --fix -w apps/web"
+  },
+  "devDependencies": {
+    "shadcn-vue": "^2.4.3"
+  }
+}

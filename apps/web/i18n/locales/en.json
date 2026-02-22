@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "appTitle": "Habits",
+    "home": "Home",
+    "achievements": "Achievements",
+    "profile": "Profile"
+  },
+  "home": {
+    "greeting": "Hi, {name}!",
+    "subtitle": "Today is a great day for habits",
+    "dailyProgress": "Daily progress",
+    "emptyTitle": "Nothing here yet",
+    "emptyDescription": "Add your first habit and start your journey to a better self"
+  },
+  "profile": {
+    "title": "Profile",
+    "level": "Level {level}",
+    "weekLabel": "This week",
+    "monthLabel": "This month",
+    "bestStreak": "Best streak",
+    "activeHabits": "Active",
+    "achievements": "Achievements",
+    "activity": "Activity",
+    "weeklyProgress": "Weekly progress"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "emptyMessage": "Complete habits to unlock achievements"
+  },
+  "habit": {
+    "back": "Back",
+    "completed": "Completed",
+    "markCompleted": "Mark as done",
+    "currentStreak": "Current streak",
+    "bestStreak": "Best streak",
+    "totalCompletions": "Total completions",
+    "week": "Week",
+    "activity3months": "Activity (3 months)",
+    "description": "Description",
+    "edit": "Edit",
+    "deleteHabit": "Delete habit",
+    "deleteConfirmTitle": "Delete habit?",
+    "deleteConfirmDescription": "This action cannot be undone. All history will be deleted.",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "habitForm": {
+    "createTitle": "New habit",
+    "editTitle": "Edit",
+    "createDescription": "Add a habit you want to build",
+    "editDescription": "Change habit settings",
+    "nameLabel": "Name",
+    "namePlaceholder": "E.g.: Meditation",
+    "iconLabel": "Icon",
+    "timeOfDayLabel": "Time of day",
+    "submitCreate": "Add habit",
+    "submitEdit": "Save"
+  },
+  "habitCard": {
+    "streakDays": "{count} d."
+  },
+  "timeOfDay": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "anytime": "Anytime"
+  },
+  "days": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "heatmap": {
+    "less": "Less",
+    "more": "More"
+  },
+  "gamification": {
+    "levelUp": "Level {level}!",
+    "levelUpMessage": "Keep it up! Keep completing your habits",
+    "levelUpButton": "Awesome!",
+    "achievementUnlocked": "Achievement unlocked!",
+    "achievementButton": "Great!"
+  },
+  "xpBar": {
+    "level": "Lv. {level}"
+  },
+  "validation": {
+    "nameRequired": "Name is required",
+    "maxChars": "Maximum {max} characters"
+  },
+  "errors": {
+    "title": "Error",
+    "fetchHabits": "Failed to load habits",
+    "completeHabit": "Failed to complete habit",
+    "uncompleteHabit": "Failed to undo completion",
+    "createHabit": "Failed to create habit",
+    "updateHabit": "Failed to update habit",
+    "deleteHabit": "Failed to delete habit",
+    "fetchProfile": "Failed to load profile",
+    "fetchAchievements": "Failed to load achievements",
+    "fetchSummary": "Failed to load statistics",
+    "fetchHeatmap": "Failed to load activity data",
+    "fetchHabitStats": "Failed to load habit statistics",
+    "authFailed": "Authentication failed",
+    "unknown": "An unexpected error occurred"
+  },
+  "success": {
+    "title": "Done",
+    "habitCreated": "Habit created",
+    "habitUpdated": "Habit updated",
+    "habitDeleted": "Habit deleted"
+  },
+  "info": {
+    "title": "Info"
+  }
+}

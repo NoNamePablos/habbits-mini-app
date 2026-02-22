@@ -1,0 +1,26 @@
+export interface DaySummary {
+  date: string
+  completed: number
+  total: number
+}
+
+export interface StatsSummary {
+  weeklyCompletions: number
+  monthlyCompletions: number
+  weeklyDays: DaySummary[]
+  currentActiveHabits: number
+  bestStreakOverall: number
+}
+
+export interface HeatmapDay {
+  date: string
+  count: number
+  level: 0 | 1 | 2 | 3 | 4
+}
+
+export interface HabitStats {
+  totalCompletions: number
+  weeklyCompletions: number
+  heatmap: HeatmapDay[]
+  weeklyData: DaySummary[]
+}

@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "appTitle": "Habits",
+    "home": "Главная",
+    "achievements": "Ачивки",
+    "profile": "Профиль"
+  },
+  "home": {
+    "greeting": "Привет, {name}!",
+    "subtitle": "Сегодня отличный день для привычек",
+    "dailyProgress": "Прогресс за день",
+    "emptyTitle": "Пока пусто",
+    "emptyDescription": "Добавь свою первую привычку и начни путь к лучшей версии себя"
+  },
+  "profile": {
+    "title": "Профиль",
+    "level": "Уровень {level}",
+    "weekLabel": "За неделю",
+    "monthLabel": "За месяц",
+    "bestStreak": "Лучший стрик",
+    "activeHabits": "Активных",
+    "achievements": "Достижения",
+    "activity": "Активность",
+    "weeklyProgress": "Прогресс за неделю"
+  },
+  "achievements": {
+    "title": "Достижения",
+    "emptyMessage": "Выполняй привычки, чтобы открывать достижения"
+  },
+  "habit": {
+    "back": "Назад",
+    "completed": "Выполнено",
+    "markCompleted": "Отметить выполненным",
+    "currentStreak": "Текущий стрик",
+    "bestStreak": "Лучший стрик",
+    "totalCompletions": "Всего выполнений",
+    "week": "Неделя",
+    "activity3months": "Активность за 3 месяца",
+    "description": "Описание",
+    "edit": "Редактировать",
+    "deleteHabit": "Удалить привычку",
+    "deleteConfirmTitle": "Удалить привычку?",
+    "deleteConfirmDescription": "Это действие нельзя отменить. Вся история будет удалена.",
+    "cancel": "Отмена",
+    "delete": "Удалить"
+  },
+  "habitForm": {
+    "createTitle": "Новая привычка",
+    "editTitle": "Редактировать",
+    "createDescription": "Добавь привычку, которую хочешь выработать",
+    "editDescription": "Измени параметры привычки",
+    "nameLabel": "Название",
+    "namePlaceholder": "Например: Медитация",
+    "iconLabel": "Иконка",
+    "timeOfDayLabel": "Время дня",
+    "submitCreate": "Добавить привычку",
+    "submitEdit": "Сохранить"
+  },
+  "habitCard": {
+    "streakDays": "{count} дн."
+  },
+  "timeOfDay": {
+    "morning": "Утро",
+    "afternoon": "День",
+    "evening": "Вечер",
+    "anytime": "Любое время"
+  },
+  "days": {
+    "sun": "Вс",
+    "mon": "Пн",
+    "tue": "Вт",
+    "wed": "Ср",
+    "thu": "Чт",
+    "fri": "Пт",
+    "sat": "Сб"
+  },
+  "heatmap": {
+    "less": "Меньше",
+    "more": "Больше"
+  },
+  "gamification": {
+    "levelUp": "Уровень {level}!",
+    "levelUpMessage": "Так держать! Продолжай выполнять привычки",
+    "levelUpButton": "Круто!",
+    "achievementUnlocked": "Ачивка получена!",
+    "achievementButton": "Отлично!"
+  },
+  "xpBar": {
+    "level": "Ур. {level}"
+  },
+  "validation": {
+    "nameRequired": "Название обязательно",
+    "maxChars": "Максимум {max} символов"
+  },
+  "errors": {
+    "title": "Ошибка",
+    "fetchHabits": "Не удалось загрузить привычки",
+    "completeHabit": "Не удалось отметить привычку",
+    "uncompleteHabit": "Не удалось отменить отметку",
+    "createHabit": "Не удалось создать привычку",
+    "updateHabit": "Не удалось обновить привычку",
+    "deleteHabit": "Не удалось удалить привычку",
+    "fetchProfile": "Не удалось загрузить профиль",
+    "fetchAchievements": "Не удалось загрузить достижения",
+    "fetchSummary": "Не удалось загрузить статистику",
+    "fetchHeatmap": "Не удалось загрузить данные активности",
+    "fetchHabitStats": "Не удалось загрузить статистику привычки",
+    "authFailed": "Ошибка авторизации",
+    "unknown": "Произошла непредвиденная ошибка"
+  },
+  "success": {
+    "title": "Готово",
+    "habitCreated": "Привычка создана",
+    "habitUpdated": "Привычка обновлена",
+    "habitDeleted": "Привычка удалена"
+  },
+  "info": {
+    "title": "Информация"
+  }
+}

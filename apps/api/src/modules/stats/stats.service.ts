@@ -1,0 +1,225 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import { HabitCompletion } from '../habits/entities/habit-completion.entity';
+import { Habit } from '../habits/entities/habit.entity';
+
+export interface DaySummary {
+  date: string;
+  completed: number;
+  total: number;
+}
+
+export interface StatsSummary {
+  weeklyCompletions: number;
+  monthlyCompletions: number;
+  weeklyDays: DaySummary[];
+  currentActiveHabits: number;
+  bestStreakOverall: number;
+}
+
+export interface HeatmapDay {
+  date: string;
+  count: number;
+  level: 0 | 1 | 2 | 3 | 4;
+}
+
+export interface HabitStats {
+  totalCompletions: number;
+  weeklyCompletions: number;
+  heatmap: HeatmapDay[];
+  weeklyData: DaySummary[];
+}
+
+@Injectable()
+export class StatsService {
+  constructor(
+    @InjectRepository(HabitCompletion)
+    private readonly completionsRepo: Repository<HabitCompletion>,
+    @InjectRepository(Habit)
+    private readonly habitsRepo: Repository<Habit>,
+  ) {}
+
+  async getSummary(userId: number): Promise<StatsSummary> {
+    const today = new Date();
+    const weekAgo = this.addDays(today, -7);
+    const monthAgo = this.addDays(today, -30);
+
+    const weekStr = this.formatDate(weekAgo);
+    const monthStr = this.formatDate(monthAgo);
+    const todayStr = this.formatDate(today);
+
+    const [
+      weeklyCompletions,
+      monthlyCompletions,
+      activeHabits,
+      weekCompletions,
+    ] = await Promise.all([
+      this.completionsRepo.count({
+        where: { userId, completedDate: Between(weekStr, todayStr) },
+      }),
+      this.completionsRepo.count({
+        where: { userId, completedDate: Between(monthStr, todayStr) },
+      }),
+      this.habitsRepo.find({
+        where: { userId, isActive: true },
+      }),
+      this.completionsRepo.find({
+        where: { userId, completedDate: Between(weekStr, todayStr) },
+        select: ['completedDate'],
+      }),
+    ]);
+
+    const bestStreakOverall = activeHabits.reduce(
+      (max, h) => Math.max(max, h.bestStreak),
+      0,
+    );
+
+    // Build weekly days from fetched data (single query instead of 7)
+    const countByDate = new Map<string, number>();
+    for (const c of weekCompletions) {
+      countByDate.set(
+        c.completedDate,
+        (countByDate.get(c.completedDate) ?? 0) + 1,
+      );
+    }
+
+    const weeklyDays: DaySummary[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = this.formatDate(this.addDays(today, -i));
+      weeklyDays.push({
+        date,
+        completed: countByDate.get(date) ?? 0,
+        total: activeHabits.length,
+      });
+    }
+
+    return {
+      weeklyCompletions,
+      monthlyCompletions,
+      weeklyDays,
+      currentActiveHabits: activeHabits.length,
+      bestStreakOverall,
+    };
+  }
+
+  async getHeatmap(userId: number, months: number = 3): Promise<HeatmapDay[]> {
+    const safeMonths = Math.min(Math.max(months, 1), 12);
+    const today = new Date();
+    const startDate = this.addDays(today, -(safeMonths * 30));
+    const startStr = this.formatDate(startDate);
+    const todayStr = this.formatDate(today);
+
+    const completions = await this.completionsRepo.find({
+      where: {
+        userId,
+        completedDate: Between(startStr, todayStr),
+      },
+    });
+
+    // Count completions per day
+    const countMap = new Map<string, number>();
+    for (const c of completions) {
+      const current = countMap.get(c.completedDate) ?? 0;
+      countMap.set(c.completedDate, current + 1);
+    }
+
+    // Find max for level calculation
+    const maxCount = Math.max(...Array.from(countMap.values()), 1);
+
+    // Build heatmap array
+    const heatmap: HeatmapDay[] = [];
+    const totalDays = safeMonths * 30;
+    for (let i = totalDays; i >= 0; i--) {
+      const date = this.formatDate(this.addDays(today, -i));
+      const count = countMap.get(date) ?? 0;
+      const level = this.getHeatmapLevel(count, maxCount);
+      heatmap.push({ date, count, level });
+    }
+
+    return heatmap;
+  }
+
+  async getHabitStats(habitId: number, userId: number): Promise<HabitStats> {
+    const today = new Date();
+    const weekAgo = this.addDays(today, -7);
+    const threeMonthsAgo = this.addDays(today, -90);
+
+    const [totalCompletions, weeklyCompletions, completions] =
+      await Promise.all([
+        this.completionsRepo.count({
+          where: { habitId, userId },
+        }),
+        this.completionsRepo.count({
+          where: {
+            habitId,
+            userId,
+            completedDate: Between(
+              this.formatDate(weekAgo),
+              this.formatDate(today),
+            ),
+          },
+        }),
+        this.completionsRepo.find({
+          where: {
+            habitId,
+            userId,
+            completedDate: Between(
+              this.formatDate(threeMonthsAgo),
+              this.formatDate(today),
+            ),
+          },
+        }),
+      ]);
+
+    const countMap = new Map<string, number>();
+    for (const c of completions) {
+      countMap.set(c.completedDate, 1);
+    }
+
+    const heatmap: HeatmapDay[] = [];
+    for (let i = 90; i >= 0; i--) {
+      const date = this.formatDate(this.addDays(today, -i));
+      const count = countMap.get(date) ?? 0;
+      heatmap.push({
+        date,
+        count,
+        level: count > 0 ? 4 : 0,
+      });
+    }
+
+    // Weekly data
+    const weeklyData: DaySummary[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = this.formatDate(this.addDays(today, -i));
+      const completed = countMap.has(date) ? 1 : 0;
+      weeklyData.push({ date, completed, total: 1 });
+    }
+
+    return {
+      totalCompletions,
+      weeklyCompletions,
+      heatmap,
+      weeklyData,
+    };
+  }
+
+  private getHeatmapLevel(count: number, maxCount: number): 0 | 1 | 2 | 3 | 4 {
+    if (count === 0) return 0;
+    const ratio = count / maxCount;
+    if (ratio <= 0.25) return 1;
+    if (ratio <= 0.5) return 2;
+    if (ratio <= 0.75) return 3;
+    return 4;
+  }
+
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+}
