@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { Habit } from '~/types/habit'
-import { Check, Flame } from 'lucide-vue-next'
-import { STREAK_BADGE_THRESHOLD } from '~/constants'
+import { Check, Flame, ChevronRight } from 'lucide-vue-next'
 
 interface Props {
   habit: Habit
@@ -21,6 +20,8 @@ const { resolveIcon } = useHabitIcon()
 
 const habitIcon = computed<Component>(() => resolveIcon(props.habit.icon))
 
+const habitColor = computed<string>(() => props.habit.color ?? 'var(--primary)')
+
 const onToggle = (): void => {
   if (!props.completed) {
     hapticNotification('success')
@@ -37,8 +38,9 @@ const onClick = (): void => {
 
 <template>
   <div
-    class="flex items-center gap-3 p-3 rounded-2xl glass transition-all active:scale-[0.98]"
-    :class="{ 'opacity-60': completed }"
+    class="flex items-center gap-3 p-3 rounded-2xl glass transition-all active:scale-[0.98] border-l-[3px]"
+    :class="{ 'opacity-70': completed }"
+    :style="{ borderLeftColor: habitColor }"
     @click="onClick"
   >
     <Button
@@ -53,25 +55,29 @@ const onClick = (): void => {
       @click.stop="onToggle"
     >
       <Check v-if="completed" class="h-4 w-4" />
-      <component :is="habitIcon" v-else class="h-4 w-4" />
+      <component :is="habitIcon" v-else class="h-4 w-4" :style="{ color: habitColor }" />
     </Button>
 
     <div class="flex-1 min-w-0">
       <div
         class="font-medium text-sm truncate"
-        :class="{ 'line-through text-muted-foreground': completed }"
+        :class="{ 'text-muted-foreground': completed }"
       >
         {{ habit.name }}
       </div>
-      <div v-if="habit.currentStreak > 0" class="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-        <Flame class="h-3 w-3 text-orange-500 icon-glow" />
-        <span>{{ $t('habitCard.streakDays', { count: habit.currentStreak }) }}</span>
+      <div class="text-[11px] text-muted-foreground mt-0.5">
+        {{ $t(`timeOfDay.${habit.timeOfDay}`) }}
       </div>
     </div>
 
-    <Badge v-if="habit.currentStreak >= STREAK_BADGE_THRESHOLD" variant="secondary" class="shrink-0 text-[10px] gap-1">
+    <div
+      v-if="habit.currentStreak > 0"
+      class="flex items-center gap-1 text-xs font-medium shrink-0"
+      :style="{ color: habitColor }"
+    >
+      <Flame class="h-3.5 w-3.5" />
       {{ habit.currentStreak }}
-      <Flame class="h-3 w-3 text-orange-500" />
-    </Badge>
+    </div>
+    <ChevronRight class="h-4 w-4 text-muted-foreground/40 shrink-0" />
   </div>
 </template>

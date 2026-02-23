@@ -9,6 +9,7 @@ import { HabitsModule } from './modules/habits/habits.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { ChallengesModule } from './modules/challenges/challenges.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { StatsModule } from './modules/stats/stats.module';
     GamificationModule,
     AchievementsModule,
     StatsModule,
+    ChallengesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

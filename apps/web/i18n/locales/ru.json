@@ -3,14 +3,21 @@
     "appTitle": "Habits",
     "home": "Главная",
     "achievements": "Ачивки",
-    "profile": "Профиль"
+    "profile": "Профиль",
+    "challenges": "Челленджи"
   },
   "home": {
     "greeting": "Привет, {name}!",
     "subtitle": "Сегодня отличный день для привычек",
     "dailyProgress": "Прогресс за день",
     "emptyTitle": "Пока пусто",
-    "emptyDescription": "Добавь свою первую привычку и начни путь к лучшей версии себя"
+    "emptyDescription": "Добавь свою первую привычку и начни путь к лучшей версии себя",
+    "levelBadge": "Ур. {level}",
+    "streak": "Стрик",
+    "streakDays": "дн.",
+    "statStreak": "Лучший стрик",
+    "statWeek": "За неделю",
+    "statFreezes": "Заморозки"
   },
   "profile": {
     "title": "Профиль",
@@ -60,6 +67,69 @@
   "habitCard": {
     "streakDays": "{count} дн."
   },
+  "challenges": {
+    "title": "Челленджи",
+    "emptyTitle": "Пока нет челленджей",
+    "emptyDescription": "Брось себе вызов — выбери цель и срок",
+    "active": "Активные",
+    "history": "История",
+    "dayOf": "День {current} из {total}",
+    "daysLabel": "{count} дн.",
+    "statusCompleted": "Пройден",
+    "statusFailed": "Провален",
+    "statusAbandoned": "Отменён",
+    "currentStreak": "Текущий стрик",
+    "bestStreak": "Лучший стрик",
+    "completedDays": "Дней выполнено",
+    "missedDays": "Пропущено",
+    "checkIn": "Отметить сегодня",
+    "checked": "Сегодня сделано",
+    "addNote": "Добавить заметку",
+    "notePlaceholder": "Как прошёл день?",
+    "abandon": "Сдаться",
+    "abandonConfirmTitle": "Сдаться?",
+    "abandonConfirmDescription": "Ты продержался {days} дн. — это уже прогресс. Всегда можно начать заново.",
+    "deleteConfirmTitle": "Удалить челлендж?",
+    "deleteConfirmDescription": "Это действие нельзя отменить. Весь прогресс будет потерян.",
+    "completeTitle": "Челлендж пройден!",
+    "completeMessage": "Ты прошёл \"{title}\" — {days} дней обязательств!",
+    "completeButton": "Круто!",
+    "failedMessage": "Ты продержался {days} дн. — это тоже результат!",
+    "missesLeft": "Осталось пропусков: {count}",
+    "noMissesAllowed": "Без права на пропуск",
+    "back": "Назад",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "daysLeft": "Ещё {count} дн.",
+    "statCompleted": "Выполнено",
+    "statProgress": "Прогресс",
+    "statStreak": "Стрик",
+    "checkInShort": "Отметить",
+    "checkedShort": "Сделано",
+    "cancel": "Отмена"
+  },
+  "challengeForm": {
+    "createTitle": "Новый челлендж",
+    "editTitle": "Редактировать челлендж",
+    "createDescription": "Обязуйся на конкретный срок",
+    "editDescription": "Измени детали челленджа",
+    "titleLabel": "Что за вызов?",
+    "titlePlaceholder": "Напр.: Без сахара 30 дней",
+    "iconLabel": "Иконка",
+    "durationLabel": "Длительность",
+    "durationCustom": "Своё",
+    "durationDays": "{count} дн.",
+    "allowedMissesLabel": "Допустимые пропуски",
+    "missesStrict": "Строго",
+    "startDateLabel": "Дата старта",
+    "startToday": "Сегодня",
+    "startTomorrow": "Завтра",
+    "startCustom": "Другая дата",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Почему это важно для тебя?",
+    "submitCreate": "Начать челлендж",
+    "submitEdit": "Сохранить"
+  },
   "timeOfDay": {
     "morning": "Утро",
     "afternoon": "День",
@@ -79,6 +149,12 @@
     "less": "Меньше",
     "more": "Больше"
   },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "about": "О приложении",
+    "back": "Назад"
+  },
   "gamification": {
     "levelUp": "Уровень {level}!",
     "levelUpMessage": "Так держать! Продолжай выполнять привычки",
@@ -88,6 +164,9 @@
   },
   "xpBar": {
     "level": "Ур. {level}"
+  },
+  "userHeader": {
+    "xpLeft": "XP до след. ур."
   },
   "validation": {
     "nameRequired": "Название обязательно",
@@ -107,13 +186,26 @@
     "fetchHeatmap": "Не удалось загрузить данные активности",
     "fetchHabitStats": "Не удалось загрузить статистику привычки",
     "authFailed": "Ошибка авторизации",
-    "unknown": "Произошла непредвиденная ошибка"
+    "unknown": "Произошла непредвиденная ошибка",
+    "fetchChallenges": "Не удалось загрузить челленджи",
+    "fetchChallenge": "Не удалось загрузить челлендж",
+    "createChallenge": "Не удалось создать челлендж",
+    "updateChallenge": "Не удалось обновить челлендж",
+    "deleteChallenge": "Не удалось удалить челлендж",
+    "checkInChallenge": "Не удалось отметить день",
+    "undoCheckIn": "Не удалось отменить отметку",
+    "abandonChallenge": "Не удалось отменить челлендж"
   },
   "success": {
     "title": "Готово",
     "habitCreated": "Привычка создана",
     "habitUpdated": "Привычка обновлена",
-    "habitDeleted": "Привычка удалена"
+    "habitDeleted": "Привычка удалена",
+    "challengeCreated": "Челлендж начат!",
+    "challengeUpdated": "Челлендж обновлён",
+    "challengeDeleted": "Челлендж удалён",
+    "challengeCheckedIn": "День выполнен!",
+    "challengeAbandoned": "Челлендж отменён"
   },
   "dailyLogin": {
     "earned": "Ежедневный бонус: +{xp} XP!",
@@ -127,5 +219,14 @@
   },
   "info": {
     "title": "Информация"
+  },
+  "challengesOnboarding": {
+    "title": "Добро пожаловать в Челленджи!",
+    "description": "Бросай себе вызов с дедлайном. Выбери цель, установи срок и отслеживай прогресс каждый день.",
+    "feature1": "Ставь цель с чётким дедлайном",
+    "feature2": "Отмечайся каждый день",
+    "feature3": "Получай XP и открывай достижения",
+    "dontShowAgain": "Больше не показывать",
+    "button": "Поехали!"
   }
 }

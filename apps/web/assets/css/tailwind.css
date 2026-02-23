@@ -188,6 +188,34 @@
   filter: drop-shadow(0 0 6px currentColor);
 }
 
+/* Challenges nav icon — fiery standout */
+.challenges-nav-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-warm);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: -4px;
+  margin-bottom: -4px;
+}
+
+.challenges-nav-icon--active {
+  animation: gentle-pulse 2s ease-in-out infinite;
+  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.5), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+:root.dark .challenges-nav-icon {
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4), 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+:root.dark .challenges-nav-icon--active {
+  box-shadow: 0 2px 16px rgba(239, 68, 68, 0.6), 0 0 24px rgba(245, 158, 11, 0.35);
+}
+
 /* ========================================
    ANIMATIONS
    ======================================== */

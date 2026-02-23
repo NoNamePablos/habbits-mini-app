@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { Flame, Home, Trophy, User } from 'lucide-vue-next'
+import { Flame, Home, Trophy, User, Settings } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const authStore = useAuthStore()
+const gamificationStore = useGamificationStore()
 const route = useRoute()
 const { t } = useI18n()
 
 onMounted(async () => {
   await authStore.authenticate()
+  await gamificationStore.fetchProfile()
 })
 
 interface NavTab {
@@ -18,11 +20,21 @@ interface NavTab {
 
 const tabs = computed<NavTab[]>(() => [
   { path: '/', icon: Home, label: t('nav.home') },
+  { path: '/challenges', icon: Flame, label: t('nav.challenges') },
   { path: '/achievements', icon: Trophy, label: t('nav.achievements') },
   { path: '/profile', icon: User, label: t('nav.profile') },
 ])
 
-const activeTab = computed<string>(() => route.path)
+const activeTab = computed<string>(() => {
+  if (route.path.startsWith('/challenges')) return '/challenges'
+  if (route.path.startsWith('/habits')) return '/'
+  if (route.path.startsWith('/settings')) return ''
+  return route.path
+})
+
+const showUserHeader = computed<boolean>(() =>
+  !route.path.startsWith('/profile') && !route.path.startsWith('/settings'),
+)
 
 const showDailyBonus = computed<boolean>(() => authStore.dailyLoginXp !== null)
 
@@ -38,10 +50,13 @@ const onDailyBonusClose = (): void => {
         <Flame class="h-4 w-4 text-primary icon-glow" />
         <span class="text-sm font-bold tracking-wide">{{ $t('nav.appTitle') }}</span>
       </div>
-      <GamificationXPBar />
+      <NuxtLink to="/settings" class="text-muted-foreground hover:text-foreground transition-colors p-1">
+        <Settings class="h-4.5 w-4.5" />
+      </NuxtLink>
     </header>
 
     <main class="flex-1 overflow-y-auto">
+      <SharedUserHeader v-if="showUserHeader" />
       <slot />
     </main>
 
@@ -57,7 +72,19 @@ const onDailyBonusClose = (): void => {
             : 'text-muted-foreground',
         ]"
       >
-        <component :is="tab.icon" class="h-5 w-5" :class="activeTab === tab.path ? 'icon-glow' : ''" />
+        <div
+          v-if="tab.path === '/challenges'"
+          class="challenges-nav-icon"
+          :class="activeTab === tab.path ? 'challenges-nav-icon--active' : ''"
+        >
+          <component :is="tab.icon" class="h-4 w-4 text-white" />
+        </div>
+        <component
+          :is="tab.icon"
+          v-else
+          class="h-5 w-5"
+          :class="activeTab === tab.path ? 'icon-glow' : ''"
+        />
         <span class="text-[10px] font-medium">{{ tab.label }}</span>
       </NuxtLink>
     </nav>

@@ -1,12 +1,49 @@
 <script setup lang="ts">
 import type { CreateHabitPayload } from '~/types/habit'
-import { Plus, Sparkles } from 'lucide-vue-next'
+import type { DaySummary } from '~/types/stats'
+import { Plus, Sparkles, Flame, Check } from 'lucide-vue-next'
 
-const authStore = useAuthStore()
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
+const statsStore = useStatsStore()
 const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
+const { t } = useI18n()
+
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
+
+const bestCurrentStreak = computed<number>(() => {
+  const habits = toValue(habitsStore.habits)
+  if (habits.length === 0) return 0
+  return Math.max(...habits.map((h) => h.currentStreak))
+})
+
+interface WeekDay {
+  label: string
+  completed: number
+  total: number
+  isToday: boolean
+  isFuture: boolean
+}
+
+const weekDays = computed<WeekDay[]>(() => {
+  const days = statsStore.summary?.weeklyDays
+  if (!days || days.length === 0) return []
+
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  return days.map((d: DaySummary) => {
+    const date = new Date(d.date + 'T00:00:00')
+    const dayIndex = date.getDay()
+    return {
+      label: t(`days.${DAY_KEYS[dayIndex]}`),
+      completed: d.completed,
+      total: d.total,
+      isToday: d.date === todayStr,
+      isFuture: d.date > todayStr,
+    }
+  })
+})
 
 const showCreateForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
@@ -15,7 +52,11 @@ const showAchievementPopup = ref<boolean>(false)
 const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 
 onMounted(async () => {
-  await habitsStore.fetchHabits()
+  await Promise.all([
+    habitsStore.fetchHabits(),
+    gamificationStore.fetchProfile(),
+    statsStore.fetchSummary(),
+  ])
 })
 
 const onToggle = async (habitId: number): Promise<void> => {
@@ -73,28 +114,76 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
     <SharedLoadingSpinner v-if="habitsStore.isLoading" />
 
     <template v-else>
-      <div class="space-y-1 animate-fade-in-up">
-        <h1 class="text-2xl font-bold tracking-wide">
-          {{ $t('home.greeting', { name: authStore.displayName }) }}
-        </h1>
-        <p class="text-muted-foreground text-sm">
-          {{ $t('home.subtitle') }}
-        </p>
-      </div>
-
-      <Card class="glass">
-        <CardContent class="pt-6">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium">{{ $t('home.dailyProgress') }}</span>
-            <span class="text-sm text-muted-foreground">
-              {{ habitsStore.completedToday }}/{{ habitsStore.totalToday }}
-            </span>
+      <Card class="glass overflow-hidden">
+        <CardContent class="pt-4 pb-4 space-y-4">
+          <!-- Streak -->
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+              <Flame class="h-5 w-5 text-orange-500" />
+            </div>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                {{ $t('home.streak') }}
+              </div>
+              <div class="text-2xl font-black leading-tight">
+                {{ bestCurrentStreak }}
+                <span class="text-sm font-semibold text-muted-foreground">{{ $t('home.streakDays') }}</span>
+              </div>
+            </div>
           </div>
-          <div class="h-2 bg-secondary/50 rounded-full overflow-hidden">
+
+          <!-- Week circles -->
+          <div v-if="weekDays.length > 0" class="flex items-center justify-between">
             <div
-              class="h-full bg-gradient-primary animate-gradient rounded-full transition-all duration-500"
-              :style="{ width: `${habitsStore.progressPercent}%` }"
-            />
+              v-for="(day, index) in weekDays"
+              :key="index"
+              class="flex flex-col items-center gap-1.5"
+            >
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                :class="[
+                  day.isFuture
+                    ? 'bg-secondary/30'
+                    : day.completed >= day.total && day.total > 0
+                      ? 'bg-green-500 text-white'
+                      : day.completed > 0
+                        ? 'bg-green-500/30 border-2 border-green-500'
+                        : 'bg-secondary/30',
+                  day.isToday ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : '',
+                ]"
+              >
+                <Check
+                  v-if="!day.isFuture && day.completed >= day.total && day.total > 0"
+                  class="h-4 w-4"
+                />
+              </div>
+              <span
+                class="text-[10px] font-medium"
+                :class="day.isToday ? 'text-primary' : 'text-muted-foreground'"
+              >
+                {{ day.label }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Daily progress -->
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
+              {{ $t('home.dailyProgress') }}
+            </div>
+            <div class="flex items-baseline gap-1 mb-2">
+              <span class="text-2xl font-black leading-tight">
+                {{ habitsStore.completedToday }}</span><span class="text-sm text-muted-foreground">/{{ habitsStore.totalToday }}</span>
+              <span class="ml-auto text-sm font-semibold text-muted-foreground">
+                {{ habitsStore.progressPercent }}%
+              </span>
+            </div>
+            <div class="h-2 bg-foreground/10 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-primary rounded-full transition-all duration-500"
+                :style="{ width: `${habitsStore.progressPercent}%` }"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

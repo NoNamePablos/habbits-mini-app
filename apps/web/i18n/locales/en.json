@@ -3,14 +3,21 @@
     "appTitle": "Habits",
     "home": "Home",
     "achievements": "Achievements",
-    "profile": "Profile"
+    "profile": "Profile",
+    "challenges": "Challenges"
   },
   "home": {
     "greeting": "Hi, {name}!",
     "subtitle": "Today is a great day for habits",
     "dailyProgress": "Daily progress",
     "emptyTitle": "Nothing here yet",
-    "emptyDescription": "Add your first habit and start your journey to a better self"
+    "emptyDescription": "Add your first habit and start your journey to a better self",
+    "levelBadge": "Lvl {level}",
+    "streak": "Streak",
+    "streakDays": "days",
+    "statStreak": "Best streak",
+    "statWeek": "This week",
+    "statFreezes": "Freezes"
   },
   "profile": {
     "title": "Profile",
@@ -60,6 +67,69 @@
   "habitCard": {
     "streakDays": "{count} d."
   },
+  "challenges": {
+    "title": "Challenges",
+    "emptyTitle": "No challenges yet",
+    "emptyDescription": "Challenge yourself — pick a goal and a deadline",
+    "active": "Active",
+    "history": "History",
+    "dayOf": "Day {current} of {total}",
+    "daysLabel": "{count} d.",
+    "statusCompleted": "Completed",
+    "statusFailed": "Failed",
+    "statusAbandoned": "Abandoned",
+    "currentStreak": "Current streak",
+    "bestStreak": "Best streak",
+    "completedDays": "Days done",
+    "missedDays": "Missed",
+    "checkIn": "Check in for today",
+    "checked": "Done for today",
+    "addNote": "Add a note",
+    "notePlaceholder": "How was your day?",
+    "abandon": "Abandon",
+    "abandonConfirmTitle": "Give up?",
+    "abandonConfirmDescription": "You made it {days} days — that's real progress. You can always start a new one.",
+    "deleteConfirmTitle": "Delete challenge?",
+    "deleteConfirmDescription": "This action cannot be undone. All progress will be lost.",
+    "completeTitle": "Challenge Complete!",
+    "completeMessage": "You completed \"{title}\" — {days} days of commitment!",
+    "completeButton": "Amazing!",
+    "failedMessage": "You made it {days} days — that's still real progress!",
+    "missesLeft": "{count} miss(es) left",
+    "noMissesAllowed": "No misses allowed",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "daysLeft": "{count} d. left",
+    "statCompleted": "Completed",
+    "statProgress": "Progress",
+    "statStreak": "Streak",
+    "checkInShort": "Check in",
+    "checkedShort": "Done",
+    "cancel": "Cancel"
+  },
+  "challengeForm": {
+    "createTitle": "New Challenge",
+    "editTitle": "Edit Challenge",
+    "createDescription": "Commit to something for a set period",
+    "editDescription": "Update challenge details",
+    "titleLabel": "What's the challenge?",
+    "titlePlaceholder": "E.g.: No sugar for 30 days",
+    "iconLabel": "Icon",
+    "durationLabel": "Duration",
+    "durationCustom": "Custom",
+    "durationDays": "{count} d.",
+    "allowedMissesLabel": "Allowed misses",
+    "missesStrict": "Strict",
+    "startDateLabel": "Start date",
+    "startToday": "Today",
+    "startTomorrow": "Tomorrow",
+    "startCustom": "Custom date",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Why is this important to you?",
+    "submitCreate": "Start Challenge",
+    "submitEdit": "Save"
+  },
   "timeOfDay": {
     "morning": "Morning",
     "afternoon": "Afternoon",
@@ -79,6 +149,12 @@
     "less": "Less",
     "more": "More"
   },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "about": "About",
+    "back": "Back"
+  },
   "gamification": {
     "levelUp": "Level {level}!",
     "levelUpMessage": "Keep it up! Keep completing your habits",
@@ -88,6 +164,9 @@
   },
   "xpBar": {
     "level": "Lv. {level}"
+  },
+  "userHeader": {
+    "xpLeft": "XP to next lvl"
   },
   "validation": {
     "nameRequired": "Name is required",
@@ -107,13 +186,26 @@
     "fetchHeatmap": "Failed to load activity data",
     "fetchHabitStats": "Failed to load habit statistics",
     "authFailed": "Authentication failed",
-    "unknown": "An unexpected error occurred"
+    "unknown": "An unexpected error occurred",
+    "fetchChallenges": "Failed to load challenges",
+    "fetchChallenge": "Failed to load challenge",
+    "createChallenge": "Failed to create challenge",
+    "updateChallenge": "Failed to update challenge",
+    "deleteChallenge": "Failed to delete challenge",
+    "checkInChallenge": "Failed to check in",
+    "undoCheckIn": "Failed to undo check-in",
+    "abandonChallenge": "Failed to abandon challenge"
   },
   "success": {
     "title": "Done",
     "habitCreated": "Habit created",
     "habitUpdated": "Habit updated",
-    "habitDeleted": "Habit deleted"
+    "habitDeleted": "Habit deleted",
+    "challengeCreated": "Challenge started!",
+    "challengeUpdated": "Challenge updated",
+    "challengeDeleted": "Challenge deleted",
+    "challengeCheckedIn": "Day complete!",
+    "challengeAbandoned": "Challenge abandoned"
   },
   "dailyLogin": {
     "earned": "Daily bonus: +{xp} XP!",
@@ -127,5 +219,14 @@
   },
   "info": {
     "title": "Info"
+  },
+  "challengesOnboarding": {
+    "title": "Welcome to Challenges!",
+    "description": "Push your limits with time-bound commitments. Pick a goal, set a deadline, and track your daily progress.",
+    "feature1": "Set a goal with a clear deadline",
+    "feature2": "Check in daily to build momentum",
+    "feature3": "Earn XP and unlock achievements",
+    "dontShowAgain": "Don't show this again",
+    "button": "Let's go!"
   }
 }

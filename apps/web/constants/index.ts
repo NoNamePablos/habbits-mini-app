@@ -33,3 +33,18 @@ export const DEFAULT_DISPLAY_NAME = 'User'
 
 // Streak freeze limits
 export const MAX_STREAK_FREEZES = 3
+
+// Challenge defaults
+export const CHALLENGE_DEFAULTS = {
+  icon: 'Target',
+  color: '#8774e1',
+  allowedMisses: 0,
+  durationDays: 30,
+} as const
+
+export const CHALLENGE_VALIDATION = {
+  titleMaxLength: 100,
+  descriptionMaxLength: 500,
+  minDuration: 1,
+  maxDuration: 365,
+} as const

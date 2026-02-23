@@ -9,6 +9,10 @@ import { UserAchievement } from './entities/user-achievement.entity';
 import { GamificationService } from '../gamification/gamification.service';
 import { Habit, TimeOfDay } from '../habits/entities/habit.entity';
 import { HabitCompletion } from '../habits/entities/habit-completion.entity';
+import {
+  Challenge,
+  ChallengeStatus,
+} from '../challenges/entities/challenge.entity';
 
 interface AchievementWithStatus extends Achievement {
   unlocked: boolean;
@@ -24,6 +28,13 @@ interface CompletionContext {
   userId: number;
   habitId: number;
   currentStreak: number;
+}
+
+interface ChallengeCompletionContext {
+  userId: number;
+  challengeId: number;
+  durationDays: number;
+  missedDays: number;
 }
 
 const SEED_ACHIEVEMENTS: Array<{
@@ -107,6 +118,42 @@ const SEED_ACHIEVEMENTS: Array<{
     criteria: { type: 'perfect_day', value: 1 },
     xpReward: 30,
   },
+  {
+    key: 'first_challenge',
+    name: 'Первый вызов',
+    description: 'Создай первый челлендж',
+    icon: 'Target',
+    category: 'challenge',
+    criteria: { type: 'challenge_created', value: 1 },
+    xpReward: 20,
+  },
+  {
+    key: 'challenge_complete',
+    name: 'Вызов принят',
+    description: 'Пройди первый челлендж',
+    icon: 'Flag',
+    category: 'challenge',
+    criteria: { type: 'challenge_completed', value: 1 },
+    xpReward: 50,
+  },
+  {
+    key: 'challenge_master',
+    name: 'Мастер челленджей',
+    description: 'Пройди 5 челленджей',
+    icon: 'Award',
+    category: 'challenge',
+    criteria: { type: 'challenge_completed_count', value: 5 },
+    xpReward: 100,
+  },
+  {
+    key: 'iron_will',
+    name: 'Железная воля',
+    description: '30-дневный челлендж без пропусков',
+    icon: 'Shield',
+    category: 'challenge',
+    criteria: { type: 'challenge_no_misses', value: 30 },
+    xpReward: 150,
+  },
 ];
 
 @Injectable()
@@ -120,6 +167,8 @@ export class AchievementsService implements OnModuleInit {
     private readonly habitsRepo: Repository<Habit>,
     @InjectRepository(HabitCompletion)
     private readonly completionsRepo: Repository<HabitCompletion>,
+    @InjectRepository(Challenge)
+    private readonly challengesRepo: Repository<Challenge>,
     private readonly gamificationService: GamificationService,
   ) {}
 
@@ -217,6 +266,96 @@ export class AchievementsService implements OnModuleInit {
 
         await this.gamificationService.awardXp(
           userId,
+          achievement.xpReward,
+          'achievement',
+          achievement.id,
+        );
+
+        results.push({ achievement, xpAwarded: achievement.xpReward });
+      }
+    }
+
+    return results;
+  }
+
+  async checkAfterChallengeCreated(
+    userId: number,
+  ): Promise<UnlockedAchievement[]> {
+    const [challengeCount, achievements, userAchievements] = await Promise.all([
+      this.challengesRepo.count({ where: { userId } }),
+      this.achievementsRepo.find(),
+      this.userAchievementsRepo.find({ where: { userId } }),
+    ]);
+
+    const unlockedIds = new Set(userAchievements.map((ua) => ua.achievementId));
+    const results: UnlockedAchievement[] = [];
+
+    for (const achievement of achievements) {
+      if (achievement.criteria.type !== 'challenge_created') continue;
+      if (unlockedIds.has(achievement.id)) continue;
+
+      if (challengeCount >= achievement.criteria.value) {
+        const ua = this.userAchievementsRepo.create({
+          userId,
+          achievementId: achievement.id,
+        });
+        await this.userAchievementsRepo.save(ua);
+
+        await this.gamificationService.awardXp(
+          userId,
+          achievement.xpReward,
+          'achievement',
+          achievement.id,
+        );
+
+        results.push({ achievement, xpAwarded: achievement.xpReward });
+      }
+    }
+
+    return results;
+  }
+
+  async checkAfterChallengeCompletion(
+    ctx: ChallengeCompletionContext,
+  ): Promise<UnlockedAchievement[]> {
+    const [completedCount, achievements, userAchievements] = await Promise.all([
+      this.challengesRepo.count({
+        where: { userId: ctx.userId, status: ChallengeStatus.COMPLETED },
+      }),
+      this.achievementsRepo.find(),
+      this.userAchievementsRepo.find({ where: { userId: ctx.userId } }),
+    ]);
+
+    const unlockedIds = new Set(userAchievements.map((ua) => ua.achievementId));
+    const results: UnlockedAchievement[] = [];
+
+    for (const achievement of achievements) {
+      if (unlockedIds.has(achievement.id)) continue;
+
+      let met = false;
+      switch (achievement.criteria.type) {
+        case 'challenge_completed':
+        case 'challenge_completed_count':
+          met = completedCount >= achievement.criteria.value;
+          break;
+        case 'challenge_no_misses':
+          met =
+            ctx.durationDays >= achievement.criteria.value &&
+            ctx.missedDays === 0;
+          break;
+        default:
+          continue;
+      }
+
+      if (met) {
+        const ua = this.userAchievementsRepo.create({
+          userId: ctx.userId,
+          achievementId: achievement.id,
+        });
+        await this.userAchievementsRepo.save(ua);
+
+        await this.gamificationService.awardXp(
+          ctx.userId,
           achievement.xpReward,
           'achievement',
           achievement.id,

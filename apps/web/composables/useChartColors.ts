@@ -5,6 +5,7 @@ interface UseChartColorsReturn {
   muted: Ref<string>
   mutedForeground: Ref<string>
   cardBg: Ref<string>
+  isDark: Ref<boolean>
   primaryShades: ComputedRef<string[]>
 }
 
@@ -74,8 +75,8 @@ export const useChartColors = (): UseChartColorsReturn => {
   const primaryShades = computed<string[]>(() => {
     const p = toValue(primary)
     const emptyCellColor = toValue(isDark)
-      ? 'rgba(255, 255, 255, 0.06)'
-      : 'rgba(0, 0, 0, 0.04)'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.06)'
     return [
       emptyCellColor,
       ...HEATMAP_SHADE_OPACITIES.map((opacity) => toRgba(p, opacity)),
@@ -83,5 +84,5 @@ export const useChartColors = (): UseChartColorsReturn => {
     ]
   })
 
-  return { primary, muted, mutedForeground, cardBg, primaryShades }
+  return { primary, muted, mutedForeground, cardBg, isDark, primaryShades }
 }

@@ -1,7 +1,12 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 
-export type AchievementCategory = 'streak' | 'completion' | 'social' | 'time';
+export type AchievementCategory =
+  | 'streak'
+  | 'completion'
+  | 'social'
+  | 'time'
+  | 'challenge';
 
 export interface AchievementCriteria {
   type:
@@ -9,7 +14,11 @@ export interface AchievementCriteria {
     | 'total_completions'
     | 'habit_count'
     | 'perfect_day'
-    | 'morning_streak';
+    | 'morning_streak'
+    | 'challenge_created'
+    | 'challenge_completed'
+    | 'challenge_completed_count'
+    | 'challenge_no_misses';
   value: number;
 }
 
@@ -27,7 +36,7 @@ export class Achievement extends BaseEntity {
   @Column({ type: 'varchar', length: 50, nullable: true })
   icon: string;
 
-  @Column({ type: 'enum', enum: ['streak', 'completion', 'social', 'time'] })
+  @Column({ type: 'enum', enum: ['streak', 'completion', 'social', 'time', 'challenge'] })
   category: AchievementCategory;
 
   @Column({ type: 'json' })

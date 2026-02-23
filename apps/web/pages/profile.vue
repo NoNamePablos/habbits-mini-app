@@ -24,7 +24,6 @@ onMounted(async () => {
   <div class="p-4 space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">{{ $t('profile.title') }}</h1>
-      <SharedLanguageSwitcher />
     </div>
 
     <Card v-if="authStore.user" class="glass animate-fade-in-up">
@@ -47,7 +46,7 @@ onMounted(async () => {
             <span>{{ gamificationStore.xp }} XP</span>
             <span>{{ gamificationStore.xpForNextLevel }} XP</span>
           </div>
-          <div class="h-2 bg-secondary/50 rounded-full overflow-hidden">
+          <div class="h-2 bg-foreground/10 rounded-full overflow-hidden">
             <div
               class="h-full bg-gradient-primary animate-gradient rounded-full transition-all duration-500"
               :style="{ width: `${gamificationStore.progressPercent}%` }"

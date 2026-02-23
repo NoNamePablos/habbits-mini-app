@@ -6,6 +6,7 @@ import { Achievement } from './entities/achievement.entity';
 import { UserAchievement } from './entities/user-achievement.entity';
 import { Habit } from '../habits/entities/habit.entity';
 import { HabitCompletion } from '../habits/entities/habit-completion.entity';
+import { Challenge } from '../challenges/entities/challenge.entity';
 import { GamificationModule } from '../gamification/gamification.module';
 import { UsersModule } from '../users/users.module';
 
@@ -16,6 +17,7 @@ import { UsersModule } from '../users/users.module';
       UserAchievement,
       Habit,
       HabitCompletion,
+      Challenge,
     ]),
     GamificationModule,
     UsersModule,

@@ -9,7 +9,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { primary, mutedForeground } = useChartColors()
+const { primary, mutedForeground, isDark } = useChartColors()
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
@@ -23,7 +23,9 @@ const chartOptions = computed<ApexOptions>(() => ({
   chart: {
     toolbar: { show: false },
     parentHeightOffset: 0,
+    background: 'transparent',
   },
+  theme: { mode: toValue(isDark) ? 'dark' : 'light' },
   plotOptions: {
     bar: {
       borderRadius: 6,

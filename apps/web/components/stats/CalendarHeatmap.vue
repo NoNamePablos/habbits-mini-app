@@ -9,7 +9,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { primaryShades, mutedForeground, cardBg } = useChartColors()
+const { primaryShades, mutedForeground, cardBg, isDark } = useChartColors()
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
@@ -58,6 +58,7 @@ const chartOptions = computed<ApexOptions>(() => {
       parentHeightOffset: 0,
       background: 'transparent',
     },
+    theme: { mode: toValue(isDark) ? 'dark' : 'light' },
     stroke: {
       width: 1,
       colors: [toValue(cardBg)],
