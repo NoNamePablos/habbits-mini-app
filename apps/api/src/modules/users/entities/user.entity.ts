@@ -34,6 +34,9 @@ export class User extends BaseEntity {
   @Column({ type: 'date', nullable: true, default: null })
   lastFreezeUsedDate: string | null;
 
+  @Column({ type: 'date', nullable: true, default: null })
+  lastLoginDate: string | null;
+
   @Column({ default: 'UTC', length: 50 })
   timezone: string;
 }

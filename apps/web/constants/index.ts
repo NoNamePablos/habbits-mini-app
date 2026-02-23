@@ -22,12 +22,12 @@ export const STREAK_BADGE_THRESHOLD = 7
 export const DEFAULT_HEATMAP_MONTHS = 3
 
 export const CHART_COLOR_FALLBACKS = {
-  primary: '#2481cc',
-  muted: '#f0f0f0',
-  mutedForeground: '#999999',
+  primary: '#8774e1',
+  muted: '#2d2d2d',
+  mutedForeground: '#aaaaaa',
 } as const
 
-export const HEATMAP_SHADE_OPACITIES = [0.2, 0.4, 0.6] as const
+export const HEATMAP_SHADE_OPACITIES = [0.25, 0.5, 0.75] as const
 
 export const DEFAULT_DISPLAY_NAME = 'User'
 

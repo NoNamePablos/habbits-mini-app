@@ -15,11 +15,11 @@ interface UseTelegramReturn {
 }
 
 export const useTelegram = (): UseTelegramReturn => {
-  const { $telegram } = useNuxtApp()
+  const { $telegram, $telegramInitData, $telegramUser } = useNuxtApp()
   const tg = $telegram as TelegramWebApp | undefined
 
-  const user = computed((): TelegramUser | undefined => tg?.initDataUnsafe?.user)
-  const initData = computed((): string | undefined => tg?.initData)
+  const user = computed((): TelegramUser | undefined => ($telegramUser as TelegramUser | undefined) ?? tg?.initDataUnsafe?.user)
+  const initData = computed((): string | undefined => ($telegramInitData as string) || tg?.initData || undefined)
   const colorScheme = computed((): ColorScheme => tg?.colorScheme || 'light')
 
   const hapticImpact = (style: HapticImpactStyle = 'medium'): void => {

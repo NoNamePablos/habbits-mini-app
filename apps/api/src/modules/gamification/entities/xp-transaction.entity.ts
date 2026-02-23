@@ -40,7 +40,7 @@ export class XpTransaction {
   })
   source: XpSource;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   referenceId: number | null;
 
   @ManyToOne(() => User)

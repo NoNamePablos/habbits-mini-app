@@ -98,8 +98,8 @@ onMounted(async () => {
 
       <div class="flex items-center gap-4">
         <div
-          class="w-16 h-16 rounded-2xl flex items-center justify-center"
-          :class="isCompleted ? 'bg-primary/20' : 'bg-muted'"
+          class="w-16 h-16 rounded-2xl glass flex items-center justify-center"
+          :class="isCompleted ? 'bg-primary/20' : ''"
         >
           <component :is="habitIcon" class="h-8 w-8" />
         </div>
@@ -114,6 +114,7 @@ onMounted(async () => {
 
       <Button
         class="w-full gap-2"
+        :class="!isCompleted ? 'bg-gradient-primary border-0 text-white hover:opacity-90' : ''"
         :variant="isCompleted ? 'secondary' : 'default'"
         @click="onToggle"
       >
@@ -122,27 +123,27 @@ onMounted(async () => {
       </Button>
 
       <div class="grid grid-cols-2 gap-3">
-        <Card>
+        <Card class="glass stagger-item" :style="{ '--stagger': 0 }">
           <CardContent class="pt-4 pb-4 text-center">
             <div class="text-2xl font-bold">{{ habit.currentStreak }}</div>
             <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-              <Flame class="h-3 w-3 text-orange-500" />
+              <Flame class="h-3 w-3 text-orange-500 icon-glow" />
               {{ $t('habit.currentStreak') }}
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card class="glass stagger-item" :style="{ '--stagger': 1 }">
           <CardContent class="pt-4 pb-4 text-center">
             <div class="text-2xl font-bold">{{ habit.bestStreak }}</div>
             <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-              <Trophy class="h-3 w-3 text-yellow-500" />
+              <Trophy class="h-3 w-3 text-yellow-500 icon-glow" />
               {{ $t('habit.bestStreak') }}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card v-if="habitStats">
+      <Card v-if="habitStats" class="glass stagger-item" :style="{ '--stagger': 2 }">
         <CardContent class="pt-4 pb-4 text-center">
           <div class="text-2xl font-bold">{{ habitStats.totalCompletions }}</div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
@@ -152,7 +153,7 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <Card v-if="habitStats && habitStats.weeklyData.length > 0">
+      <Card v-if="habitStats && habitStats.weeklyData.length > 0" class="glass stagger-item" :style="{ '--stagger': 3 }">
         <CardContent class="pt-4 pb-4">
           <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
             <BarChart3 class="h-3.5 w-3.5" />
@@ -162,7 +163,7 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <Card v-if="habitStats && habitStats.heatmap.length > 0">
+      <Card v-if="habitStats && habitStats.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 4 }">
         <CardContent class="pt-4 pb-4">
           <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
             <Calendar class="h-3.5 w-3.5" />
@@ -172,33 +173,35 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <Card v-if="habit.description">
+      <Card v-if="habit.description" class="glass">
         <CardContent class="pt-4 pb-4">
           <div class="text-xs text-muted-foreground mb-1">{{ $t('habit.description') }}</div>
           <div class="text-sm">{{ habit.description }}</div>
         </CardContent>
       </Card>
 
-      <Separator />
-
-      <div class="space-y-2">
+      <div class="space-y-2 pt-2">
         <Button
-          variant="outline"
-          class="w-full justify-start gap-2"
+          variant="ghost"
+          class="w-full justify-start gap-3 h-12 rounded-xl glass border-white/10 dark:border-white/5 hover:bg-white/10"
           @click="showEditForm = true"
         >
-          <Pencil class="h-4 w-4" />
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Pencil class="h-4 w-4 text-primary" />
+          </div>
           {{ $t('habit.edit') }}
         </Button>
 
         <AlertDialog v-model:open="showDeleteConfirm">
           <AlertDialogTrigger as-child>
             <Button
-              variant="outline"
-              class="w-full justify-start gap-2 text-destructive"
+              variant="ghost"
+              class="w-full justify-start gap-3 h-12 rounded-xl glass border-white/10 dark:border-white/5 hover:bg-destructive/10"
             >
-              <Trash2 class="h-4 w-4" />
-              {{ $t('habit.deleteHabit') }}
+              <div class="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <Trash2 class="h-4 w-4 text-destructive" />
+              </div>
+              <span class="text-destructive">{{ $t('habit.deleteHabit') }}</span>
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -218,7 +221,7 @@ onMounted(async () => {
         </AlertDialog>
       </div>
 
-      <HabitForm
+      <HabitsHabitForm
         :open="showEditForm"
         :edit-mode="true"
         :initial-data="{

@@ -1,0 +1,291 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Register design tokens with Tailwind.
+ * Static fallbacks so Tailwind generates utilities (bg-card, text-foreground, etc.).
+ * Actual runtime values set in :root via Telegram theme CSS variables.
+ */
+@theme {
+  --font-sans: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-primary: #2481cc;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #efeff4;
+  --color-secondary-foreground: #000000;
+  --color-muted: #efeff4;
+  --color-muted-foreground: #999999;
+  --color-accent: #efeff4;
+  --color-accent-foreground: #000000;
+  --color-destructive: #ff3b30;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #c8c7cc;
+  --color-input: #c8c7cc;
+  --color-ring: #2481cc;
+  --color-card: #ffffff;
+  --color-card-foreground: #000000;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #000000;
+
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+}
+
+/* ========================================
+   RUNTIME: Telegram theme variable mapping
+   ======================================== */
+:root {
+  --color-background: var(--tg-theme-bg-color, #ffffff);
+  --color-foreground: var(--tg-theme-text-color, #000000);
+  --color-primary: var(--tg-theme-button-color, #2481cc);
+  --color-primary-foreground: var(--tg-theme-button-text-color, #ffffff);
+  --color-secondary: var(--tg-theme-secondary-bg-color, #efeff4);
+  --color-secondary-foreground: var(--tg-theme-text-color, #000000);
+  --color-muted: var(--tg-theme-secondary-bg-color, #efeff4);
+  --color-muted-foreground: var(--tg-theme-hint-color, #999999);
+  --color-accent: var(--tg-theme-secondary-bg-color, #efeff4);
+  --color-accent-foreground: var(--tg-theme-text-color, #000000);
+  --color-destructive: var(--tg-theme-destructive-text-color, #ff3b30);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--tg-theme-section-separator-color, #c8c7cc);
+  --color-input: var(--tg-theme-section-separator-color, #c8c7cc);
+  --color-ring: var(--tg-theme-button-color, #2481cc);
+  --color-card: var(--tg-theme-secondary-bg-color, #ffffff);
+  --color-card-foreground: var(--tg-theme-text-color, #000000);
+  --color-popover: var(--tg-theme-secondary-bg-color, #ffffff);
+  --color-popover-foreground: var(--tg-theme-text-color, #000000);
+
+  /* Glass tokens — light mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --glass-blur: 16px;
+  --glass-blur-heavy: 24px;
+
+  /* Gradient accents */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary), #a855f7 40%));
+  --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
+  --gradient-gold: linear-gradient(135deg, #f59e0b, #eab308);
+
+  /* Ambient background mesh */
+  --bg-mesh: radial-gradient(
+      ellipse at 20% 50%,
+      color-mix(in srgb, var(--color-primary), transparent 92%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      color-mix(in srgb, #a855f7, transparent 94%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 60% 80%,
+      color-mix(in srgb, #3b82f6, transparent 94%) 0%,
+      transparent 50%
+    );
+}
+
+/* ========================================
+   DARK MODE OVERRIDES
+   ======================================== */
+:root.dark {
+  --color-card: color-mix(in srgb, var(--tg-theme-bg-color, #1a1a1a), white 10%);
+  --color-card-foreground: var(--tg-theme-text-color, #ffffff);
+  --color-popover: color-mix(in srgb, var(--tg-theme-bg-color, #1a1a1a), white 14%);
+  --color-popover-foreground: var(--tg-theme-text-color, #ffffff);
+  --color-secondary: color-mix(in srgb, var(--tg-theme-bg-color, #1a1a1a), white 8%);
+  --color-muted: color-mix(in srgb, var(--tg-theme-bg-color, #1a1a1a), white 6%);
+  --color-accent: color-mix(in srgb, var(--tg-theme-bg-color, #1a1a1a), white 10%);
+  --color-border: color-mix(in srgb, var(--tg-theme-text-color, #ffffff), transparent 85%);
+  --color-input: color-mix(in srgb, var(--tg-theme-text-color, #ffffff), transparent 80%);
+
+  /* Glass tokens — dark mode */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.3);
+
+  /* Ambient mesh — slightly more visible in dark */
+  --bg-mesh: radial-gradient(
+      ellipse at 20% 50%,
+      color-mix(in srgb, var(--color-primary), transparent 88%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      color-mix(in srgb, #a855f7, transparent 90%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 60% 80%,
+      color-mix(in srgb, #3b82f6, transparent 92%) 0%,
+      transparent 50%
+    );
+}
+
+/* ========================================
+   GLASS UTILITY CLASSES
+   ======================================== */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-heavy {
+  background: var(--glass-bg-heavy);
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.glass-nav {
+  background: var(--glass-bg-heavy);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: var(--glass-border);
+}
+
+.bg-mesh {
+  background-image: var(--bg-mesh);
+  background-attachment: fixed;
+}
+
+/* Gradient utilities */
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-warm {
+  background: var(--gradient-warm);
+}
+
+.bg-gradient-gold {
+  background: var(--gradient-gold);
+}
+
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Icon glow — dark mode only */
+:root.dark .icon-glow {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+.animate-gentle-pulse {
+  animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Stagger: apply as style="--stagger: N" */
+.stagger-item {
+  animation: fade-in-up 0.4s ease-out both;
+  animation-delay: calc(var(--stagger, 0) * 60ms);
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ========================================
+   GLOBAL SHADCN GLASS OVERRIDES
+   ======================================== */
+
+/* Sheet/Dialog overlay: frosted backdrop */
+.fixed.inset-0.z-50[data-state] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Sheet/Dialog content: glass surface */
+.fixed.z-50.gap-4.shadow-lg {
+  background: var(--glass-bg-heavy) !important;
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  border-color: var(--glass-border);
+}
+
+/* AlertDialog content: glass surface */
+[role="alertdialog"] {
+  background: var(--glass-bg-heavy) !important;
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  border-color: var(--glass-border);
+}
+
+/* Input: glass background */
+input.flex.h-10.w-full.rounded-md {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--glass-border) !important;
+}

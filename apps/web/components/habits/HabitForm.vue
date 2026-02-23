@@ -48,7 +48,7 @@ watch(() => props.open, (val) => {
 
 <template>
   <Sheet :open="open" @update:open="emit('update:open', $event)">
-    <SheetContent side="bottom" class="rounded-t-2xl">
+    <SheetContent side="bottom" class="rounded-t-2xl glass-heavy">
       <SheetHeader>
         <SheetTitle>{{ editMode ? $t('habitForm.editTitle') : $t('habitForm.createTitle') }}</SheetTitle>
         <SheetDescription>
@@ -110,7 +110,7 @@ watch(() => props.open, (val) => {
         </div>
 
         <Button
-          class="w-full"
+          class="w-full bg-gradient-primary border-0 text-white hover:opacity-90"
           :disabled="!form.isValid.value"
           @click="onSubmit"
         >

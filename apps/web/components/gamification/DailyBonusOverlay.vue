@@ -1,0 +1,103 @@
+<script setup lang="ts">
+import { Zap, Check } from 'lucide-vue-next'
+import { Vue3Lottie } from 'vue3-lottie'
+import rewardAnimation from '~/assets/animations/daily-reward.json'
+
+interface Props {
+  show: boolean
+  xp: number
+  weekLoginDays: string[]
+}
+
+interface Emits {
+  (e: 'close'): void
+}
+
+const props = defineProps<Props>()
+defineEmits<Emits>()
+
+const { fire } = useConfetti()
+const { t } = useI18n()
+
+watch(() => props.show, (val) => {
+  if (val) {
+    fire('burst')
+  }
+})
+
+const weekDays = computed<{ label: string; date: string; visited: boolean }[]>(() => {
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + mondayOffset)
+
+  const dayKeys = ['days.mon', 'days.tue', 'days.wed', 'days.thu', 'days.fri', 'days.sat', 'days.sun']
+  const loginSet = new Set(props.weekLoginDays)
+
+  return dayKeys.map((key, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    const dateStr = d.toISOString().split('T')[0]
+    return {
+      label: t(key),
+      date: dateStr,
+      visited: loginSet.has(dateStr),
+    }
+  })
+})
+</script>
+
+<template>
+  <div
+    v-if="show"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+    @click="$emit('close')"
+  >
+    <Card class="w-80 text-center animate-in zoom-in-95 duration-300 glass-heavy" @click.stop>
+      <CardContent class="pt-4 pb-6 space-y-4">
+        <div class="mx-auto w-32 h-32">
+          <Vue3Lottie
+            :animation-data="rewardAnimation"
+            :loop="true"
+            :speed="0.8"
+          />
+        </div>
+
+        <div>
+          <h2 class="text-xl font-bold">{{ $t('dailyLogin.title') }}</h2>
+          <p class="text-sm text-muted-foreground mt-1">
+            {{ $t('dailyLogin.subtitle') }}
+          </p>
+        </div>
+
+        <div class="flex justify-center gap-2">
+          <div
+            v-for="day in weekDays"
+            :key="day.date"
+            class="flex flex-col items-center gap-1"
+          >
+            <div
+              class="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              :class="day.visited
+                ? 'bg-gradient-primary text-white'
+                : 'glass text-muted-foreground'"
+            >
+              <Check v-if="day.visited" class="h-4 w-4" />
+            </div>
+            <span class="text-[10px] text-muted-foreground">{{ day.label }}</span>
+          </div>
+        </div>
+
+        <Badge class="text-sm px-4 py-1 bg-gradient-gold text-white border-0">
+          <Zap class="h-3.5 w-3.5 mr-1" />
+          +{{ xp }} XP
+        </Badge>
+
+        <Button class="w-full bg-gradient-primary border-0 text-white hover:opacity-90" @click="$emit('close')">
+          {{ $t('dailyLogin.button') }}
+        </Button>
+      </CardContent>
+    </Card>
+  </div>
+</template>

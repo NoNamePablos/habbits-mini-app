@@ -9,7 +9,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { primaryShades, mutedForeground } = useChartColors()
+const { primaryShades, mutedForeground, cardBg } = useChartColors()
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
@@ -56,6 +56,11 @@ const chartOptions = computed<ApexOptions>(() => {
     chart: {
       toolbar: { show: false },
       parentHeightOffset: 0,
+      background: 'transparent',
+    },
+    stroke: {
+      width: 1,
+      colors: [toValue(cardBg)],
     },
     dataLabels: { enabled: false },
     xaxis: {
@@ -66,12 +71,13 @@ const chartOptions = computed<ApexOptions>(() => {
     yaxis: {
       labels: {
         style: { fontSize: '9px', colors: toValue(mutedForeground) },
+        offsetX: -18,
       },
     },
-    grid: { show: false, padding: { top: -20, bottom: -10, left: 0, right: 0 } },
+    grid: { show: false, padding: { top: -20, bottom: -10, left: -10, right: 0 } },
     plotOptions: {
       heatmap: {
-        radius: 2,
+        radius: 4,
         enableShades: false,
         colorScale: {
           ranges: shades.map((color, i) => ({
@@ -95,7 +101,7 @@ const chartOptions = computed<ApexOptions>(() => {
 <template>
   <div>
     <apexchart type="heatmap" height="140" :options="chartOptions" :series="series" />
-    <div class="flex items-center gap-1 justify-end -mt-2">
+    <div class="flex items-center gap-1 justify-end pt-1">
       <span class="text-[9px] text-muted-foreground">{{ $t('heatmap.less') }}</span>
       <div
         v-for="(shade, i) in primaryShades"

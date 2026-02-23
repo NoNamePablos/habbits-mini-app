@@ -32,11 +32,13 @@ const habitsStore = useHabitsStore()
       </div>
 
       <div class="space-y-1.5">
-        <HabitCard
-          v-for="habit in group.habits"
+        <HabitsHabitCard
+          v-for="(habit, index) in group.habits"
           :key="habit.id"
           :habit="habit"
           :completed="habitsStore.isCompleted(habit.id)"
+          class="stagger-item"
+          :style="{ '--stagger': index }"
           @toggle="$emit('toggle', $event)"
           @click="$emit('click', $event)"
         />

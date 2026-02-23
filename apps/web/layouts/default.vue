@@ -23,14 +23,20 @@ const tabs = computed<NavTab[]>(() => [
 ])
 
 const activeTab = computed<string>(() => route.path)
+
+const showDailyBonus = computed<boolean>(() => authStore.dailyLoginXp !== null)
+
+const onDailyBonusClose = (): void => {
+  authStore.clearDailyBonus()
+}
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-background text-foreground">
-    <header class="flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-      <div class="flex items-center gap-2">
-        <Flame class="h-5 w-5 text-primary" />
-        <span class="text-lg font-bold">{{ $t('nav.appTitle') }}</span>
+  <div class="flex flex-col h-full bg-background text-foreground bg-mesh">
+    <header class="flex items-center justify-between px-3 py-2 glass-nav border-b border-white/10 dark:border-white/5">
+      <div class="flex items-center gap-1.5">
+        <Flame class="h-4 w-4 text-primary icon-glow" />
+        <span class="text-sm font-bold tracking-wide">{{ $t('nav.appTitle') }}</span>
       </div>
       <GamificationXPBar />
     </header>
@@ -39,22 +45,29 @@ const activeTab = computed<string>(() => route.path)
       <slot />
     </main>
 
-    <nav class="flex items-center justify-around bg-card border-t border-border pb-safe">
+    <nav class="flex items-center justify-around glass-nav border-t border-white/10 dark:border-white/5 pb-safe">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.path"
         :to="tab.path"
-        class="flex flex-col items-center gap-1 py-2 px-4 transition-colors"
+        class="flex flex-col items-center gap-0.5 py-1.5 px-4 transition-colors"
         :class="[
           activeTab === tab.path
             ? 'text-primary'
             : 'text-muted-foreground',
         ]"
       >
-        <component :is="tab.icon" class="h-5 w-5" />
+        <component :is="tab.icon" class="h-5 w-5" :class="activeTab === tab.path ? 'icon-glow' : ''" />
         <span class="text-[10px] font-medium">{{ tab.label }}</span>
       </NuxtLink>
     </nav>
+
+    <GamificationDailyBonusOverlay
+      :show="showDailyBonus"
+      :xp="authStore.dailyLoginXp ?? 0"
+      :week-login-days="authStore.weekLoginDays"
+      @close="onDailyBonusClose"
+    />
   </div>
 </template>
 

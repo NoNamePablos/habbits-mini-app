@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -18,6 +19,7 @@ interface RequestWithUser {
 
 @Injectable()
 export class TelegramAuthGuard implements CanActivate {
+  private readonly logger = new Logger(TelegramAuthGuard.name);
   private readonly botToken: string;
   private readonly maxAgeSeconds = 86400; // 24 hours
 
@@ -33,6 +35,7 @@ export class TelegramAuthGuard implements CanActivate {
     const initData = request.headers['x-telegram-init-data'];
 
     if (!initData) {
+      this.logger.warn('Missing x-telegram-init-data header');
       throw new UnauthorizedException('Missing Telegram init data');
     }
 

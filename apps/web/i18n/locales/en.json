@@ -115,6 +115,12 @@
     "habitUpdated": "Habit updated",
     "habitDeleted": "Habit deleted"
   },
+  "dailyLogin": {
+    "earned": "Daily bonus: +{xp} XP!",
+    "title": "Daily Bonus!",
+    "subtitle": "Log in every day to earn XP",
+    "button": "Claim!"
+  },
   "streakFreeze": {
     "used": "Streak freeze protected your streak!",
     "earned": "You earned a streak freeze!"

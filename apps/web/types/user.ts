@@ -14,4 +14,6 @@ export interface UserProfile {
 export interface AuthResponse {
   user: UserProfile
   message: string
+  dailyLoginXp: number | null
+  weekLoginDays: string[]
 }

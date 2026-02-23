@@ -11,6 +11,6 @@ const props = defineProps<Props>()
 
 <template>
   <div :class="cn('flex items-center justify-center h-64', props.class)">
-    <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+    <Loader2 class="h-6 w-6 animate-spin text-primary/60 icon-glow" />
   </div>
 </template>

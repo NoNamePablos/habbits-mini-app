@@ -73,8 +73,8 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
     <SharedLoadingSpinner v-if="habitsStore.isLoading" />
 
     <template v-else>
-      <div class="space-y-1">
-        <h1 class="text-2xl font-bold">
+      <div class="space-y-1 animate-fade-in-up">
+        <h1 class="text-2xl font-bold tracking-wide">
           {{ $t('home.greeting', { name: authStore.displayName }) }}
         </h1>
         <p class="text-muted-foreground text-sm">
@@ -82,7 +82,7 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
         </p>
       </div>
 
-      <Card>
+      <Card class="glass">
         <CardContent class="pt-6">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium">{{ $t('home.dailyProgress') }}</span>
@@ -90,11 +90,16 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
               {{ habitsStore.completedToday }}/{{ habitsStore.totalToday }}
             </span>
           </div>
-          <Progress :model-value="habitsStore.progressPercent" class="h-2" />
+          <div class="h-2 bg-secondary/50 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-gradient-primary animate-gradient rounded-full transition-all duration-500"
+              :style="{ width: `${habitsStore.progressPercent}%` }"
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <HabitList
+      <HabitsHabitList
         v-if="habitsStore.groupedByTimeOfDay.length > 0"
         :groups="habitsStore.groupedByTimeOfDay"
         @toggle="onToggle"
@@ -116,13 +121,13 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
 
       <Button
         size="icon"
-        class="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg"
+        class="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg bg-gradient-primary border border-white/20 text-white hover:opacity-90"
         @click="showCreateForm = true"
       >
         <Plus class="h-6 w-6" />
       </Button>
 
-      <HabitForm
+      <HabitsHabitForm
         :open="showCreateForm"
         @update:open="showCreateForm = $event"
         @submit="onCreateHabit"

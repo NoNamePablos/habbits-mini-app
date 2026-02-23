@@ -33,16 +33,27 @@ export class UsersService {
       return this.usersRepository.save(user);
     }
 
-    user = this.usersRepository.create({
-      telegramId: tgUser.id,
-      firstName: tgUser.first_name,
-      lastName: tgUser.last_name,
-      username: tgUser.username,
-      photoUrl: tgUser.photo_url,
-      languageCode: tgUser.language_code,
-    });
+    try {
+      user = this.usersRepository.create({
+        telegramId: tgUser.id,
+        firstName: tgUser.first_name,
+        lastName: tgUser.last_name,
+        username: tgUser.username,
+        photoUrl: tgUser.photo_url,
+        languageCode: tgUser.language_code,
+      });
 
-    return this.usersRepository.save(user);
+      return await this.usersRepository.save(user);
+    } catch (error: unknown) {
+      const dbError = error as { code?: string };
+      if (dbError.code === 'ER_DUP_ENTRY') {
+        const existing = await this.usersRepository.findOne({
+          where: { telegramId: tgUser.id },
+        });
+        if (existing) return existing;
+      }
+      throw error;
+    }
   }
 
   async findByTelegramId(telegramId: number): Promise<User | null> {

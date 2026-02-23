@@ -27,10 +27,10 @@ onMounted(async () => {
       <SharedLanguageSwitcher />
     </div>
 
-    <Card v-if="authStore.user">
+    <Card v-if="authStore.user" class="glass animate-fade-in-up">
       <CardContent class="pt-6 pb-4">
         <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+          <div class="w-14 h-14 rounded-full glass bg-primary/10 flex items-center justify-center">
             <User class="h-7 w-7 text-primary" />
           </div>
           <div class="flex-1 min-w-0">
@@ -47,13 +47,18 @@ onMounted(async () => {
             <span>{{ gamificationStore.xp }} XP</span>
             <span>{{ gamificationStore.xpForNextLevel }} XP</span>
           </div>
-          <Progress :model-value="gamificationStore.progressPercent" class="h-2" />
+          <div class="h-2 bg-secondary/50 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-gradient-primary animate-gradient rounded-full transition-all duration-500"
+              :style="{ width: `${gamificationStore.progressPercent}%` }"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
 
     <div v-if="statsStore.summary" class="grid grid-cols-2 gap-3">
-      <Card>
+      <Card class="glass stagger-item" :style="{ '--stagger': 0 }">
         <CardContent class="pt-4 pb-4 text-center">
           <div class="text-2xl font-bold">{{ statsStore.summary.weeklyCompletions }}</div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
@@ -62,7 +67,7 @@ onMounted(async () => {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="glass stagger-item" :style="{ '--stagger': 1 }">
         <CardContent class="pt-4 pb-4 text-center">
           <div class="text-2xl font-bold">{{ statsStore.summary.monthlyCompletions }}</div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
@@ -71,16 +76,16 @@ onMounted(async () => {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="glass stagger-item" :style="{ '--stagger': 2 }">
         <CardContent class="pt-4 pb-4 text-center">
           <div class="text-2xl font-bold">{{ statsStore.summary.bestStreakOverall }}</div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
-            <Flame class="h-3 w-3 text-orange-500" />
+            <Flame class="h-3 w-3 text-orange-500 icon-glow" />
             {{ $t('profile.bestStreak') }}
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="glass stagger-item" :style="{ '--stagger': 3 }">
         <CardContent class="pt-4 pb-4 text-center">
           <div class="text-2xl font-bold">{{ statsStore.summary.currentActiveHabits }}</div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
@@ -91,7 +96,7 @@ onMounted(async () => {
       </Card>
     </div>
 
-    <Card>
+    <Card class="glass stagger-item" :style="{ '--stagger': 4 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -105,11 +110,11 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="glass stagger-item" :style="{ '--stagger': 5 }">
       <CardContent class="pt-4 pb-4">
         <NuxtLink to="/achievements" class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <Award class="h-4 w-4 text-yellow-500" />
+            <Award class="h-4 w-4 text-yellow-500 icon-glow" />
             <span class="text-sm font-medium">{{ $t('profile.achievements') }}</span>
           </div>
           <div class="flex items-center gap-1">
@@ -122,7 +127,7 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card v-if="statsStore.heatmap.length > 0">
+    <Card v-if="statsStore.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 6 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Calendar class="h-3.5 w-3.5" />
@@ -132,7 +137,7 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0">
+    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0" class="glass stagger-item" :style="{ '--stagger': 7 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Trophy class="h-3.5 w-3.5" />

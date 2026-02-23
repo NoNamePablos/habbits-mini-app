@@ -129,7 +129,12 @@ export class AchievementsService implements OnModuleInit {
 
   private async seedAchievements(): Promise<void> {
     for (const seed of SEED_ACHIEVEMENTS) {
-      await this.achievementsRepo.upsert(seed, ['key']);
+      const exists = await this.achievementsRepo.findOne({
+        where: { key: seed.key },
+      });
+      if (!exists) {
+        await this.achievementsRepo.save(this.achievementsRepo.create(seed));
+      }
     }
   }
 

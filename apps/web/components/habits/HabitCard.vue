@@ -37,7 +37,7 @@ const onClick = (): void => {
 
 <template>
   <div
-    class="flex items-center gap-3 p-3 rounded-xl bg-card transition-all active:scale-[0.98]"
+    class="flex items-center gap-3 p-3 rounded-2xl glass transition-all active:scale-[0.98]"
     :class="{ 'opacity-60': completed }"
     @click="onClick"
   >
@@ -47,8 +47,8 @@ const onClick = (): void => {
       class="shrink-0 w-10 h-10 rounded-full transition-all"
       :class="[
         completed
-          ? 'bg-primary border-primary text-primary-foreground hover:bg-primary/90'
-          : 'border-border bg-transparent',
+          ? 'bg-gradient-primary border-transparent text-white hover:opacity-90'
+          : 'border-white/20 dark:border-white/10 bg-transparent',
       ]"
       @click.stop="onToggle"
     >
@@ -64,7 +64,7 @@ const onClick = (): void => {
         {{ habit.name }}
       </div>
       <div v-if="habit.currentStreak > 0" class="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-        <Flame class="h-3 w-3 text-orange-500" />
+        <Flame class="h-3 w-3 text-orange-500 icon-glow" />
         <span>{{ $t('habitCard.streakDays', { count: habit.currentStreak }) }}</span>
       </div>
     </div>

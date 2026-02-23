@@ -26,7 +26,7 @@ const chartOptions = computed<ApexOptions>(() => ({
   },
   plotOptions: {
     bar: {
-      borderRadius: 4,
+      borderRadius: 6,
       columnWidth: '55%',
     },
   },
