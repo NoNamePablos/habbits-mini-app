@@ -46,6 +46,18 @@ export const useAuthStore = defineStore('auth', () => {
     dailyLoginXp.value = null
   }
 
+  const deleteAccount = async (): Promise<boolean> => {
+    try {
+      await api.del('/users/me')
+      user.value = null
+      isAuthenticated.value = false
+      return true
+    } catch (error: unknown) {
+      handleError(error, 'errors.deleteAccount')
+      return false
+    }
+  }
+
   return {
     user,
     isAuthenticated,
@@ -55,5 +67,6 @@ export const useAuthStore = defineStore('auth', () => {
     weekLoginDays,
     authenticate,
     clearDailyBonus,
+    deleteAccount,
   }
 })

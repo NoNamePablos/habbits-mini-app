@@ -159,7 +159,18 @@
     "notifications": "Notifications",
     "morningReminder": "Morning reminder",
     "eveningReminder": "Evening reminder",
-    "reminderTime": "Time"
+    "reminderTime": "Time",
+    "theme": "Theme",
+    "themeAuto": "Auto",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "feedback": "Feedback",
+    "account": "Account",
+    "deleteAccount": "Delete account",
+    "deleteAccountTitle": "Delete account?",
+    "deleteAccountDescription": "All data will be permanently deleted. This action cannot be undone.",
+    "deleteAccountConfirm": "Delete",
+    "cancel": "Cancel"
   },
   "gamification": {
     "levelUp": "Level {level}!",
@@ -200,7 +211,8 @@
     "deleteChallenge": "Failed to delete challenge",
     "checkInChallenge": "Failed to check in",
     "undoCheckIn": "Failed to undo check-in",
-    "abandonChallenge": "Failed to abandon challenge"
+    "abandonChallenge": "Failed to abandon challenge",
+    "deleteAccount": "Failed to delete account"
   },
   "success": {
     "title": "Done",
@@ -248,6 +260,17 @@
     "tplHealthyEating": "Healthy eating",
     "tplSleep": "Sleep on time",
     "tplJournaling": "Journaling"
+  },
+  "homeTour": {
+    "step1Title": "Mark a habit",
+    "step1Text": "Tap the circle to mark a habit as done",
+    "step2Title": "Weekly progress",
+    "step2Text": "See how many habits you completed each day",
+    "step3Title": "Streak",
+    "step3Text": "Streak counts consecutive days. Don't miss!",
+    "next": "Next",
+    "skip": "Skip",
+    "done": "Got it!"
   },
   "challengesOnboarding": {
     "title": "Welcome to Challenges!",
