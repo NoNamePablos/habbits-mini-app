@@ -19,16 +19,45 @@ defineProps<Props>()
 defineEmits<Emits>()
 
 const habitsStore = useHabitsStore()
+const { getTimeOfDayStatus } = useCurrentTimeOfDay()
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="space-y-4">
-    <div v-for="group in groups" :key="group.key" class="space-y-2">
+    <div
+      v-for="group in groups"
+      :key="group.key"
+      class="space-y-2 transition-opacity duration-300"
+      :class="{ 'opacity-50': getTimeOfDayStatus(group.key) === 'past' }"
+    >
       <div class="flex items-center gap-2 px-1">
-        <component :is="TIME_OF_DAY_ICONS[group.key]" class="h-4 w-4 text-muted-foreground" />
-        <span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <component
+          :is="TIME_OF_DAY_ICONS[group.key]"
+          class="h-4 w-4"
+          :class="[
+            getTimeOfDayStatus(group.key) === 'current'
+              ? 'text-primary'
+              : 'text-muted-foreground',
+          ]"
+        />
+        <span
+          class="text-xs font-medium uppercase tracking-wide"
+          :class="[
+            getTimeOfDayStatus(group.key) === 'current'
+              ? 'text-primary'
+              : 'text-muted-foreground',
+          ]"
+        >
           {{ $t(`timeOfDay.${group.key}`) }}
         </span>
+        <Badge
+          v-if="getTimeOfDayStatus(group.key) === 'current'"
+          variant="secondary"
+          class="text-[9px] px-1.5 py-0 bg-primary/15 text-primary border-0"
+        >
+          {{ t('timeOfDay.now') }}
+        </Badge>
       </div>
 
       <div class="space-y-1.5">

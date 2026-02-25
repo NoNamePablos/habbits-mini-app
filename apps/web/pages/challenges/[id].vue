@@ -148,7 +148,7 @@ const onEdit = async (data: Partial<CreateChallengePayload>): Promise<void> => {
 
 <template>
   <div class="p-4 space-y-4">
-    <SharedLoadingSpinner v-if="isLoading" />
+    <ChallengesChallengeDetailSkeleton v-if="isLoading" />
 
     <template v-else-if="challenge">
       <div class="flex items-center gap-2 animate-fade-in-up">

@@ -135,7 +135,8 @@
     "morning": "Morning",
     "afternoon": "Afternoon",
     "evening": "Evening",
-    "anytime": "Anytime"
+    "anytime": "Anytime",
+    "now": "Now"
   },
   "days": {
     "sun": "Sun",

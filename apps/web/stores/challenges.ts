@@ -13,7 +13,7 @@ export const useChallengesStore = defineStore('challenges', () => {
   const { handleError } = useErrorHandler()
 
   const challenges = ref<ChallengeListItem[]>([])
-  const isLoading = ref<boolean>(false)
+  const isLoading = ref<boolean>(true)
 
   const activeChallenges = computed<ChallengeListItem[]>(() =>
     toValue(challenges).filter((c) => c.status === 'active'),

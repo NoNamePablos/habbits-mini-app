@@ -18,7 +18,7 @@ onMounted(async () => {
       </Badge>
     </div>
 
-    <SharedLoadingSpinner v-if="gamificationStore.isLoading" class="h-48" />
+    <GamificationAchievementsPageSkeleton v-if="gamificationStore.isLoading" />
 
     <div v-else class="grid grid-cols-2 gap-3">
       <GamificationAchievementCard
