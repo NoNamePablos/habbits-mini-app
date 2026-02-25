@@ -12,6 +12,7 @@
     "dailyProgress": "Daily progress",
     "emptyTitle": "Nothing here yet",
     "emptyDescription": "Add your first habit and start your journey to a better self",
+    "emptyButton": "Create your first habit",
     "levelBadge": "Lvl {level}",
     "streak": "Streak",
     "streakDays": "days",
@@ -153,7 +154,11 @@
     "title": "Settings",
     "language": "Language",
     "about": "About",
-    "back": "Back"
+    "back": "Back",
+    "notifications": "Notifications",
+    "morningReminder": "Morning reminder",
+    "eveningReminder": "Evening reminder",
+    "reminderTime": "Time"
   },
   "gamification": {
     "levelUp": "Level {level}!",
@@ -205,6 +210,7 @@
     "challengeUpdated": "Challenge updated",
     "challengeDeleted": "Challenge deleted",
     "challengeCheckedIn": "Day complete!",
+    "habitsCreated": "Habits created!",
     "challengeAbandoned": "Challenge abandoned"
   },
   "dailyLogin": {
@@ -227,6 +233,20 @@
     "feature2": "Build streaks and protect your progress",
     "feature3": "Earn XP, level up, and unlock achievements",
     "button": "Get Started"
+  },
+  "onboarding": {
+    "title": "Choose your habits",
+    "description": "Start with templates or create your own later",
+    "addSelected": "Add ({count})",
+    "skip": "Skip",
+    "tplExercise": "Exercise",
+    "tplWater": "Drink water",
+    "tplReading": "Reading",
+    "tplMeditation": "Meditation",
+    "tplWalking": "Walking",
+    "tplHealthyEating": "Healthy eating",
+    "tplSleep": "Sleep on time",
+    "tplJournaling": "Journaling"
   },
   "challengesOnboarding": {
     "title": "Welcome to Challenges!",

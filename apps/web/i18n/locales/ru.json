@@ -12,6 +12,7 @@
     "dailyProgress": "Прогресс за день",
     "emptyTitle": "Пока пусто",
     "emptyDescription": "Добавь свою первую привычку и начни путь к лучшей версии себя",
+    "emptyButton": "Создать первую привычку",
     "levelBadge": "Ур. {level}",
     "streak": "Стрик",
     "streakDays": "дн.",
@@ -153,7 +154,11 @@
     "title": "Настройки",
     "language": "Язык",
     "about": "О приложении",
-    "back": "Назад"
+    "back": "Назад",
+    "notifications": "Уведомления",
+    "morningReminder": "Утреннее напоминание",
+    "eveningReminder": "Вечернее напоминание",
+    "reminderTime": "Время"
   },
   "gamification": {
     "levelUp": "Уровень {level}!",
@@ -205,6 +210,7 @@
     "challengeUpdated": "Челлендж обновлён",
     "challengeDeleted": "Челлендж удалён",
     "challengeCheckedIn": "День выполнен!",
+    "habitsCreated": "Привычки созданы!",
     "challengeAbandoned": "Челлендж отменён"
   },
   "dailyLogin": {
@@ -227,6 +233,20 @@
     "feature2": "Набирай стрики и не теряй прогресс",
     "feature3": "Зарабатывай XP и открывай достижения",
     "button": "Начать"
+  },
+  "onboarding": {
+    "title": "Выбери привычки",
+    "description": "Начни с готовых шаблонов или создай свои позже",
+    "addSelected": "Добавить ({count})",
+    "skip": "Пропустить",
+    "tplExercise": "Зарядка",
+    "tplWater": "Пить воду",
+    "tplReading": "Чтение",
+    "tplMeditation": "Медитация",
+    "tplWalking": "Прогулка",
+    "tplHealthyEating": "Здоровое питание",
+    "tplSleep": "Сон вовремя",
+    "tplJournaling": "Дневник"
   },
   "challengesOnboarding": {
     "title": "Добро пожаловать в Челленджи!",
