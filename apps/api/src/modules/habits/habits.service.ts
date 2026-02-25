@@ -83,6 +83,17 @@ export class HabitsService {
     return saved;
   }
 
+  async createBatch(userId: number, dtos: CreateHabitDto[]): Promise<Habit[]> {
+    const habits = dtos.map((dto) =>
+      this.habitsRepo.create({ ...dto, userId }),
+    );
+    const saved = await this.habitsRepo.save(habits);
+
+    await this.achievementsService.checkAfterHabitCreated(userId);
+
+    return saved;
+  }
+
   async update(
     id: number,
     userId: number,

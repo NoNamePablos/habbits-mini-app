@@ -206,6 +206,13 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
             {{ $t('home.emptyDescription') }}
           </p>
         </div>
+        <Button
+          class="mt-2 bg-gradient-primary border-0 text-white hover:opacity-90"
+          @click="showCreateForm = true"
+        >
+          <Plus class="h-4 w-4 mr-2" />
+          {{ $t('home.emptyButton') }}
+        </Button>
       </div>
 
       <Button

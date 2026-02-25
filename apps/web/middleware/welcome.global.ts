@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware((to) => {
     hasSeenWelcome = false
   }
 
-  if (!hasSeenWelcome && to.path !== '/welcome') {
+  if (!hasSeenWelcome && to.path !== '/welcome' && to.path !== '/onboarding') {
     return navigateTo('/welcome')
   }
 

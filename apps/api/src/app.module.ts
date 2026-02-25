@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -10,10 +11,12 @@ import { GamificationModule } from './modules/gamification/gamification.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -28,7 +31,7 @@ import { ChallengesModule } from './modules/challenges/challenges.module';
         autoLoadEntities: true,
         synchronize: false,
         migrationsRun: true,
-        migrations: ['dist/database/migrations/*.js'],
+        migrations: ['dist/src/database/migrations/*.js'],
         logging: config.get('NODE_ENV') === 'development',
       }),
     }),
@@ -39,6 +42,7 @@ import { ChallengesModule } from './modules/challenges/challenges.module';
     AchievementsModule,
     StatsModule,
     ChallengesModule,
+    NotificationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

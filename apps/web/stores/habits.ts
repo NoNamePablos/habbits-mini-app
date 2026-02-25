@@ -104,6 +104,17 @@ export const useHabitsStore = defineStore('habits', () => {
     }
   }
 
+  const createBatch = async (payloads: CreateHabitPayload[]): Promise<Habit[] | null> => {
+    try {
+      const created = await api.post<Habit[]>('/habits/batch', { habits: payloads })
+      habits.value = [...toValue(habits), ...created]
+      return created
+    } catch (error) {
+      handleError(error, 'errors.createHabit')
+      return null
+    }
+  }
+
   const updateHabit = async (id: number, payload: Partial<CreateHabitPayload>): Promise<Habit | null> => {
     try {
       const updated = await api.patch<Habit>(`/habits/${id}`, payload)
@@ -143,6 +154,7 @@ export const useHabitsStore = defineStore('habits', () => {
     completeHabit,
     uncompleteHabit,
     createHabit,
+    createBatch,
     updateHabit,
     deleteHabit,
   }

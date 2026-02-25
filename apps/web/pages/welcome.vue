@@ -33,7 +33,7 @@ const features = [
 
 const onStart = (): void => {
   markAsSeen()
-  navigateTo('/', { replace: true })
+  navigateTo('/onboarding', { replace: true })
 }
 </script>
 

@@ -16,6 +16,7 @@ import { User } from '../users/entities/user.entity';
 import { Habit } from './entities/habit.entity';
 import { HabitCompletion } from './entities/habit-completion.entity';
 import { CreateHabitDto } from './dto/create-habit.dto';
+import { BatchCreateHabitsDto } from './dto/batch-create-habits.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
 import { Achievement } from '../achievements/entities/achievement.entity';
@@ -60,6 +61,14 @@ export class HabitsController {
     @Body() dto: CreateHabitDto,
   ): Promise<Habit> {
     return this.habitsService.create(user.id, dto);
+  }
+
+  @Post('batch')
+  async createBatch(
+    @TelegramUser() user: User,
+    @Body() dto: BatchCreateHabitsDto,
+  ): Promise<Habit[]> {
+    return this.habitsService.createBatch(user.id, dto.habits);
   }
 
   @Get(':id')
