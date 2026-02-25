@@ -51,6 +51,19 @@ const levelUpLevel = ref<number>(1)
 const showAchievementPopup = ref<boolean>(false)
 const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 
+// Onboarding tour
+const { hasSeenOnboarding: hasSeenHomeTour, markAsSeen: markHomeTourSeen } = useOnboarding('homeTour')
+const showHomeTour = ref<boolean>(false)
+const streakRef = ref<HTMLElement | null>(null)
+const weekCirclesRef = ref<HTMLElement | null>(null)
+const habitListRef = ref<InstanceType<typeof HTMLElement> | null>(null)
+const habitListEl = computed<HTMLElement | null>(() => {
+  const r = toValue(habitListRef)
+  if (!r) return null
+  // Component ref — access $el
+  return (r as unknown as { $el?: HTMLElement }).$el ?? (r as HTMLElement)
+})
+
 const refreshData = async (): Promise<void> => {
   await Promise.all([
     habitsStore.fetchHabits(),
@@ -65,7 +78,17 @@ const { containerRef, pullDistance, isRefreshing } = usePullToRefresh({
 
 onMounted(async () => {
   await refreshData()
+
+  await nextTick()
+  if (toValue(habitsStore.habits).length > 0 && !toValue(hasSeenHomeTour)) {
+    showHomeTour.value = true
+  }
 })
+
+const onHomeTourClose = (): void => {
+  showHomeTour.value = false
+  markHomeTourSeen()
+}
 
 const onToggle = async (habitId: number): Promise<void> => {
   const today = new Date().toISOString().split('T')[0]
@@ -130,7 +153,7 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
       <Card class="glass overflow-hidden">
         <CardContent class="pt-4 pb-4 space-y-4">
           <!-- Streak -->
-          <div class="flex items-center gap-3">
+          <div ref="streakRef" class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
               <Flame class="h-5 w-5 text-orange-500" />
             </div>
@@ -146,7 +169,7 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
           </div>
 
           <!-- Week circles -->
-          <div v-if="weekDays.length > 0" class="flex items-center justify-between">
+          <div v-if="weekDays.length > 0" ref="weekCirclesRef" class="flex items-center justify-between">
             <div
               v-for="(day, index) in weekDays"
               :key="index"
@@ -203,6 +226,7 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
 
       <HabitsHabitList
         v-if="habitsStore.groupedByTimeOfDay.length > 0"
+        ref="habitListRef"
         :groups="habitsStore.groupedByTimeOfDay"
         @toggle="onToggle"
         @click="onHabitClick"
@@ -252,6 +276,14 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
         :show="showAchievementPopup"
         :achievement="pendingAchievement"
         @close="showAchievementPopup = false"
+      />
+
+      <HabitsHomeTourOverlay
+        :show="showHomeTour"
+        :streak-el="streakRef"
+        :week-el="weekCirclesRef"
+        :habit-list-el="habitListEl"
+        @close="onHomeTourClose"
       />
     </template>
   </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ArrowLeft, Globe, Info, Bell } from 'lucide-vue-next'
+import { ArrowLeft, Globe, Info, Bell, Palette, Trash2, MessageCircle } from 'lucide-vue-next'
 import { Switch } from '~/components/ui/switch'
+
+type ThemePreference = 'auto' | 'light' | 'dark'
 
 interface NotificationPreferences {
   morningEnabled: boolean
@@ -13,6 +15,9 @@ const router = useRouter()
 const api = useApi()
 const { locale } = useI18n()
 const { handleError } = useErrorHandler()
+const authStore = useAuthStore()
+const { hapticNotification } = useTelegram()
+const { preference: themePref, setPreference: setThemePref } = useThemePreference()
 
 const currentLanguage = computed<{ flag: string; label: string }>(() =>
   locale.value === 'ru'
@@ -63,6 +68,25 @@ const toggleLocale = (): void => {
   locale.value = locale.value === 'ru' ? 'en' : 'ru'
 }
 
+const themeOptions: { value: ThemePreference; labelKey: string }[] = [
+  { value: 'auto', labelKey: 'settings.themeAuto' },
+  { value: 'light', labelKey: 'settings.themeLight' },
+  { value: 'dark', labelKey: 'settings.themeDark' },
+]
+
+const onDeleteAccount = async (): Promise<void> => {
+  const success = await authStore.deleteAccount()
+  if (success) {
+    hapticNotification('warning')
+    const { tg } = useTelegram()
+    if (tg?.close) {
+      tg.close()
+    } else {
+      window.location.reload()
+    }
+  }
+}
+
 const goBack = (): void => {
   router.back()
 }
@@ -87,6 +111,27 @@ const goBack = (): void => {
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">{{ currentLanguage.flag }} {{ currentLanguage.label }}</span>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass">
+      <CardContent class="pt-4 pb-4 space-y-3">
+        <div class="flex items-center gap-2">
+          <Palette class="h-4 w-4 text-muted-foreground" />
+          <span class="text-sm font-semibold">{{ $t('settings.theme') }}</span>
+        </div>
+        <div class="flex gap-2">
+          <Button
+            v-for="option in themeOptions"
+            :key="option.value"
+            :variant="themePref === option.value ? 'default' : 'outline'"
+            size="sm"
+            class="flex-1"
+            @click="setThemePref(option.value)"
+          >
+            {{ $t(option.labelKey) }}
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -144,6 +189,15 @@ const goBack = (): void => {
 
     <Card class="glass">
       <CardContent class="pt-4 pb-4">
+        <div class="flex items-center gap-3 cursor-pointer" @click="() => {}">
+          <MessageCircle class="h-4 w-4 text-muted-foreground" />
+          <span class="text-sm font-medium">{{ $t('settings.feedback') }}</span>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass">
+      <CardContent class="pt-4 pb-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <Info class="h-4 w-4 text-muted-foreground" />
@@ -151,6 +205,33 @@ const goBack = (): void => {
           </div>
           <span class="text-sm text-muted-foreground">v0.1.0</span>
         </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass border-destructive/20">
+      <CardContent class="pt-4 pb-4">
+        <AlertDialog>
+          <AlertDialogTrigger as-child>
+            <div class="flex items-center gap-3 cursor-pointer">
+              <Trash2 class="h-4 w-4 text-destructive" />
+              <span class="text-sm font-medium text-destructive">{{ $t('settings.deleteAccount') }}</span>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent class="glass-heavy">
+            <AlertDialogHeader>
+              <AlertDialogTitle>{{ $t('settings.deleteAccountTitle') }}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {{ $t('settings.deleteAccountDescription') }}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{{ $t('settings.cancel') }}</AlertDialogCancel>
+              <AlertDialogAction class="bg-destructive text-destructive-foreground" @click="onDeleteAccount">
+                {{ $t('settings.deleteAccountConfirm') }}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   </div>

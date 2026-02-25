@@ -1,4 +1,11 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
 import { TelegramUser } from '../../core/telegram/telegram-user.decorator';
@@ -21,5 +28,11 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(user.id, dto);
+  }
+
+  @Delete('me')
+  async deleteMe(@TelegramUser() user: User): Promise<{ success: boolean }> {
+    await this.usersService.deleteAccount(user.id);
+    return { success: true };
   }
 }

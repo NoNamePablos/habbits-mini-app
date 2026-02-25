@@ -159,7 +159,18 @@
     "notifications": "Уведомления",
     "morningReminder": "Утреннее напоминание",
     "eveningReminder": "Вечернее напоминание",
-    "reminderTime": "Время"
+    "reminderTime": "Время",
+    "theme": "Тема",
+    "themeAuto": "Авто",
+    "themeLight": "Светлая",
+    "themeDark": "Тёмная",
+    "feedback": "Обратная связь",
+    "account": "Аккаунт",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountTitle": "Удалить аккаунт?",
+    "deleteAccountDescription": "Все данные будут удалены безвозвратно. Это действие нельзя отменить.",
+    "deleteAccountConfirm": "Удалить",
+    "cancel": "Отмена"
   },
   "gamification": {
     "levelUp": "Уровень {level}!",
@@ -200,7 +211,8 @@
     "deleteChallenge": "Не удалось удалить челлендж",
     "checkInChallenge": "Не удалось отметить день",
     "undoCheckIn": "Не удалось отменить отметку",
-    "abandonChallenge": "Не удалось отменить челлендж"
+    "abandonChallenge": "Не удалось отменить челлендж",
+    "deleteAccount": "Не удалось удалить аккаунт"
   },
   "success": {
     "title": "Готово",
@@ -248,6 +260,17 @@
     "tplHealthyEating": "Здоровое питание",
     "tplSleep": "Сон вовремя",
     "tplJournaling": "Дневник"
+  },
+  "homeTour": {
+    "step1Title": "Отметить привычку",
+    "step1Text": "Нажмите на кружок чтобы отметить привычку выполненной",
+    "step2Title": "Прогресс недели",
+    "step2Text": "Здесь видно сколько привычек выполнено каждый день",
+    "step3Title": "Серия дней",
+    "step3Text": "Streak считает дни подряд. Не пропускайте!",
+    "next": "Далее",
+    "skip": "Пропустить",
+    "done": "Понятно!"
   },
   "challengesOnboarding": {
     "title": "Добро пожаловать в Челленджи!",

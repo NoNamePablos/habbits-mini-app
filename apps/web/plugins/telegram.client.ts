@@ -104,13 +104,20 @@ export default defineNuxtPlugin((): { provide: { telegram: TelegramWebApp | unde
     user = parseUserFromInitData(initData)
   }
 
-  // Detect dark mode: prefer theme bg_color luminance (SDK colorScheme is broken)
-  const bgColor = themeParams?.bg_color || tg?.themeParams?.bg_color
-  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
-  const detectedDark = bgColor ? isDarkColor(bgColor) : (prefersDark || tg?.colorScheme === 'dark')
+  // Detect dark mode: respect user theme preference, fallback to Telegram detection
+  const themePref = (() => { try { return localStorage.getItem('theme-preference') } catch { return null } })()
 
-  if (detectedDark) {
+  if (themePref === 'dark') {
     document.documentElement.classList.add('dark')
+  } else if (themePref === 'light') {
+    document.documentElement.classList.remove('dark')
+  } else {
+    const bgColor = themeParams?.bg_color || tg?.themeParams?.bg_color
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches
+    const detectedDark = bgColor ? isDarkColor(bgColor) : (prefersDark || tg?.colorScheme === 'dark')
+    if (detectedDark) {
+      document.documentElement.classList.add('dark')
+    }
   }
 
   if (tg) {
@@ -119,6 +126,8 @@ export default defineNuxtPlugin((): { provide: { telegram: TelegramWebApp | unde
     tg.enableClosingConfirmation()
 
     tg.onEvent('themeChanged', () => {
+      const pref = (() => { try { return localStorage.getItem('theme-preference') } catch { return null } })()
+      if (pref === 'light' || pref === 'dark') return // user override — ignore Telegram theme changes
       const newBg = tg.themeParams?.bg_color
       const dark = newBg ? isDarkColor(newBg) : tg.colorScheme === 'dark'
       document.documentElement.classList.toggle('dark', dark)

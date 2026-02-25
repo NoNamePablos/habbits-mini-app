@@ -43,7 +43,7 @@ export class XpTransaction {
   @Column({ type: 'int', nullable: true })
   referenceId: number | null;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 

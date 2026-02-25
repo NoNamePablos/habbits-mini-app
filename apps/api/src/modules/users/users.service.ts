@@ -64,4 +64,8 @@ export class UsersService {
     await this.usersRepository.update(id, data);
     return this.usersRepository.findOneByOrFail({ id });
   }
+
+  async deleteAccount(userId: number): Promise<void> {
+    await this.usersRepository.delete(userId);
+  }
 }
