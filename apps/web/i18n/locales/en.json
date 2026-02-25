@@ -220,6 +220,14 @@
   "info": {
     "title": "Info"
   },
+  "welcome": {
+    "greeting": "Hi, {name}!",
+    "description": "A habit tracker that helps you get better every day",
+    "feature1": "Create habits and check them off daily",
+    "feature2": "Build streaks and protect your progress",
+    "feature3": "Earn XP, level up, and unlock achievements",
+    "button": "Get Started"
+  },
   "challengesOnboarding": {
     "title": "Welcome to Challenges!",
     "description": "Push your limits with time-bound commitments. Pick a goal, set a deadline, and track your daily progress.",
