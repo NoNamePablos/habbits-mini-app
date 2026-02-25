@@ -22,6 +22,9 @@ onMounted(async () => {
 
 <template>
   <div class="p-4 space-y-4">
+    <SharedProfilePageSkeleton v-if="isLoading" />
+
+    <template v-else>
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">{{ $t('profile.title') }}</h1>
     </div>
@@ -145,5 +148,6 @@ onMounted(async () => {
         <StatsWeeklyChart :data="statsStore.summary.weeklyDays" />
       </CardContent>
     </Card>
+    </template>
   </div>
 </template>

@@ -51,12 +51,20 @@ const levelUpLevel = ref<number>(1)
 const showAchievementPopup = ref<boolean>(false)
 const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 
-onMounted(async () => {
+const refreshData = async (): Promise<void> => {
   await Promise.all([
     habitsStore.fetchHabits(),
     gamificationStore.fetchProfile(),
     statsStore.fetchSummary(),
   ])
+}
+
+const { containerRef, pullDistance, isRefreshing } = usePullToRefresh({
+  onRefresh: refreshData,
+})
+
+onMounted(async () => {
+  await refreshData()
 })
 
 const onToggle = async (habitId: number): Promise<void> => {
@@ -110,8 +118,13 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
 </script>
 
 <template>
-  <div class="p-4 space-y-4">
-    <SharedLoadingSpinner v-if="habitsStore.isLoading" />
+  <div ref="containerRef" class="p-4 space-y-4">
+    <SharedPullToRefreshIndicator
+      :pull-distance="pullDistance"
+      :is-refreshing="isRefreshing"
+    />
+
+    <HabitsHomePageSkeleton v-if="habitsStore.isLoading && !isRefreshing" />
 
     <template v-else>
       <Card class="glass overflow-hidden">

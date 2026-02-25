@@ -7,7 +7,7 @@ export const useGamificationStore = defineStore('gamification', () => {
   const { handleError } = useErrorHandler()
   const profile = ref<GamificationProfile | null>(null)
   const achievements = ref<Achievement[]>([])
-  const isLoading = ref<boolean>(false)
+  const isLoading = ref<boolean>(true)
 
   const level = computed<number>(() => toValue(profile)?.level ?? GAMIFICATION_DEFAULTS.level)
   const xp = computed<number>(() => toValue(profile)?.xp ?? GAMIFICATION_DEFAULTS.xp)

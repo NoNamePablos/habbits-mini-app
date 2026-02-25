@@ -135,7 +135,8 @@
     "morning": "Утро",
     "afternoon": "День",
     "evening": "Вечер",
-    "anytime": "Любое время"
+    "anytime": "Любое время",
+    "now": "Сейчас"
   },
   "days": {
     "sun": "Вс",

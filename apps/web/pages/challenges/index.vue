@@ -71,7 +71,7 @@ const onCreateChallenge = async (data: CreateChallengePayload): Promise<void> =>
 
 <template>
   <div class="p-4 space-y-4">
-    <SharedLoadingSpinner v-if="challengesStore.isLoading" />
+    <ChallengesChallengesPageSkeleton v-if="challengesStore.isLoading" />
 
     <template v-else>
       <div class="space-y-1 animate-fade-in-up">

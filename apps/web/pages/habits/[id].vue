@@ -83,7 +83,7 @@ onMounted(async () => {
 
 <template>
   <div class="p-4 space-y-4">
-    <SharedLoadingSpinner v-if="isLoading" />
+    <HabitsHabitDetailSkeleton v-if="isLoading" />
 
     <template v-else-if="habit">
       <Button

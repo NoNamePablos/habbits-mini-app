@@ -17,7 +17,7 @@ export const useHabitsStore = defineStore('habits', () => {
   const { handleError } = useErrorHandler()
   const habits = ref<Habit[]>([])
   const todayCompletions = ref<HabitCompletion[]>([])
-  const isLoading = ref<boolean>(false)
+  const isLoading = ref<boolean>(true)
 
   const completedIds = computed<Set<number>>(() => {
     return new Set(toValue(todayCompletions).map((c) => c.habitId))
@@ -63,10 +63,30 @@ export const useHabitsStore = defineStore('habits', () => {
   }
 
   const completeHabit = async (habitId: number): Promise<CompleteResponse | null> => {
+    const today = new Date().toISOString().split('T')[0]
+    const fakeCompletion: HabitCompletion = {
+      id: -Date.now(),
+      habitId,
+      userId: 0,
+      completedDate: today,
+      value: null,
+      xpEarned: 0,
+      note: null,
+      createdAt: new Date().toISOString(),
+    }
+
+    const previousCompletions = [...toValue(todayCompletions)]
+    const previousHabits = [...toValue(habits)]
+
+    todayCompletions.value = [...previousCompletions, fakeCompletion]
+
     try {
       const result = await api.post<CompleteResponse>(`/habits/${habitId}/complete`)
 
-      todayCompletions.value = [...toValue(todayCompletions), result.completion]
+      todayCompletions.value = toValue(todayCompletions).map((c) =>
+        c.id === fakeCompletion.id ? result.completion : c,
+      )
+
       const idx = toValue(habits).findIndex((h) => h.id === habitId)
       if (idx !== -1) {
         habits.value[idx] = result.habit
@@ -74,21 +94,29 @@ export const useHabitsStore = defineStore('habits', () => {
 
       return result
     } catch (error) {
+      todayCompletions.value = previousCompletions
+      habits.value = previousHabits
       handleError(error, 'errors.completeHabit')
       return null
     }
   }
 
   const uncompleteHabit = async (habitId: number, date: string): Promise<void> => {
+    const previousCompletions = [...toValue(todayCompletions)]
+    const previousHabits = [...toValue(habits)]
+
+    todayCompletions.value = toValue(todayCompletions).filter((c) => c.habitId !== habitId)
+
     try {
       const updatedHabit = await api.del<Habit>(`/habits/${habitId}/complete/${date}`)
 
-      todayCompletions.value = toValue(todayCompletions).filter((c) => c.habitId !== habitId)
       const idx = toValue(habits).findIndex((h) => h.id === habitId)
       if (idx !== -1) {
         habits.value[idx] = updatedHabit
       }
     } catch (error) {
+      todayCompletions.value = previousCompletions
+      habits.value = previousHabits
       handleError(error, 'errors.uncompleteHabit')
     }
   }
