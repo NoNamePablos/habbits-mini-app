@@ -18,7 +18,19 @@
     "streakDays": "days",
     "statStreak": "Best streak",
     "statWeek": "This week",
-    "statFreezes": "Freezes"
+    "statFreezes": "Freezes",
+    "progressLabel": {
+      "start": "Start your day!",
+      "early": "Great start!",
+      "midway": "Halfway there, keep going!",
+      "almost": "{count} more to go",
+      "perfect": "Perfect day! Amazing work!"
+    },
+    "perfectDay": {
+      "title": "Perfect Day!",
+      "subtitle": "All habits done. You're on fire!",
+      "button": "Awesome!"
+    }
   },
   "profile": {
     "title": "Profile",
@@ -30,7 +42,11 @@
     "streakFreezes": "Streak Freezes",
     "achievements": "Achievements",
     "activity": "Activity",
-    "weeklyProgress": "Weekly progress"
+    "weeklyProgress": "Weekly progress",
+    "insights": "Insights",
+    "insightBestDay": "Your most productive day is {day}",
+    "insightBestStreak": "Best streak: {name} ({streak} days)",
+    "insightWeeklyRate": "You completed {pct}% of habits this week"
   },
   "achievements": {
     "title": "Achievements",
@@ -109,7 +125,16 @@
     "statStreak": "Streak",
     "checkInShort": "Check in",
     "checkedShort": "Done",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "recentDays": "Recent 14 days"
+  },
+  "challengeTemplate": {
+    "noSugar": "No Sugar",
+    "meditation": "Meditation",
+    "reading": "Reading",
+    "coldShower": "Cold Shower",
+    "noAlcohol": "No Alcohol",
+    "workout": "Workout"
   },
   "challengeForm": {
     "createTitle": "New Challenge",
@@ -167,6 +192,9 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "feedback": "Feedback",
+    "weekStart": "Week starts on",
+    "weekStartMon": "Monday",
+    "weekStartSun": "Sunday",
     "account": "Account",
     "deleteAccount": "Delete account",
     "deleteAccountTitle": "Delete account?",

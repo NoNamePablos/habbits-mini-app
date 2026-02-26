@@ -65,3 +65,20 @@ export const GOAL_TARGET_PRESETS = {
   total_xp: [500, 1000, 2000],
   total_completions: [30, 50, 100],
 } as const
+
+// Challenge templates
+export interface ChallengeTemplate {
+  titleKey: string
+  icon: string
+  targetDays: number
+  allowedMisses: number
+}
+
+export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
+  { titleKey: 'challengeTemplate.noSugar',    icon: 'Apple',    targetDays: 30, allowedMisses: 3 },
+  { titleKey: 'challengeTemplate.meditation', icon: 'Brain',    targetDays: 21, allowedMisses: 2 },
+  { titleKey: 'challengeTemplate.reading',    icon: 'BookOpen', targetDays: 21, allowedMisses: 2 },
+  { titleKey: 'challengeTemplate.coldShower', icon: 'Droplets', targetDays: 21, allowedMisses: 1 },
+  { titleKey: 'challengeTemplate.noAlcohol',  icon: 'Wine',     targetDays: 30, allowedMisses: 0 },
+  { titleKey: 'challengeTemplate.workout',    icon: 'Dumbbell', targetDays: 30, allowedMisses: 3 },
+]

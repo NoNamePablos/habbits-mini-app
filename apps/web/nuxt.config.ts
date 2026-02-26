@@ -46,6 +46,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: '/api',
+      feedbackUrl: 'https://t.me/habitsapp_feedback',
     },
   },
 

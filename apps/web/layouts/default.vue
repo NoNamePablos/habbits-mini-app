@@ -8,6 +8,8 @@ const statsStore = useStatsStore()
 const route = useRoute()
 const { t } = useI18n()
 
+const { achievementsBadge, markAchievementsSeen } = useNavBadges()
+
 const lastMondayISO = ((): string => {
   const now = new Date()
   const day = now.getDay()
@@ -47,6 +49,12 @@ const activeTab = computed<string>(() => {
   if (route.path.startsWith('/habits')) return '/'
   if (route.path.startsWith('/settings')) return ''
   return route.path
+})
+
+watch(activeTab, (path) => {
+  if (path === '/achievements') {
+    markAchievementsSeen()
+  }
 })
 
 const showUserHeader = computed<boolean>(() =>
@@ -94,11 +102,7 @@ const onWeeklySummaryClose = (): void => {
         :key="tab.path"
         :to="tab.path"
         class="flex flex-col items-center gap-0.5 py-1.5 px-4 transition-colors"
-        :class="[
-          activeTab === tab.path
-            ? 'text-primary'
-            : 'text-muted-foreground',
-        ]"
+        :class="[activeTab === tab.path ? 'text-primary' : 'text-muted-foreground']"
       >
         <div
           v-if="tab.path === '/challenges'"
@@ -106,6 +110,19 @@ const onWeeklySummaryClose = (): void => {
           :class="activeTab === tab.path ? 'challenges-nav-icon--active' : ''"
         >
           <component :is="tab.icon" class="h-4 w-4 text-white" />
+        </div>
+        <div v-else-if="tab.path === '/achievements'" class="relative">
+          <component
+            :is="tab.icon"
+            class="h-5 w-5"
+            :class="activeTab === tab.path ? 'icon-glow' : ''"
+          />
+          <span
+            v-if="achievementsBadge > 0"
+            class="absolute -top-1 -right-1.5 min-w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center px-0.5"
+          >
+            {{ achievementsBadge > 9 ? '9+' : achievementsBadge }}
+          </span>
         </div>
         <component
           :is="tab.icon"

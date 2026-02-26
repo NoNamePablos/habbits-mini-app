@@ -22,6 +22,15 @@ const habitIcon = computed<Component>(() => resolveIcon(props.habit.icon))
 
 const habitColor = computed<string>(() => props.habit.color ?? 'var(--primary)')
 
+const isJustCompleted = ref<boolean>(false)
+
+watch(() => props.completed, (val, old) => {
+  if (val && !old) {
+    isJustCompleted.value = true
+    setTimeout(() => { isJustCompleted.value = false }, 600)
+  }
+})
+
 const onToggle = (): void => {
   if (!props.completed) {
     hapticNotification('success')
@@ -39,7 +48,7 @@ const onClick = (): void => {
 <template>
   <div
     class="flex items-center gap-3 p-3 rounded-2xl glass transition-all active:scale-[0.98] border-l-[3px]"
-    :class="{ 'opacity-70': completed }"
+    :class="[{ 'opacity-70': completed }, { 'animate-row-flash': isJustCompleted }]"
     :style="{ borderLeftColor: habitColor }"
     @click="onClick"
   >
@@ -51,6 +60,7 @@ const onClick = (): void => {
         completed
           ? 'bg-gradient-primary border-transparent text-white hover:opacity-90'
           : 'border-white/20 dark:border-white/10 bg-transparent',
+        { 'animate-habit-complete': isJustCompleted },
       ]"
       @click.stop="onToggle"
     >
@@ -81,3 +91,26 @@ const onClick = (): void => {
     <ChevronRight class="h-4 w-4 text-muted-foreground/40 shrink-0" />
   </div>
 </template>
+
+<style lang="scss" scoped>
+@keyframes habit-complete {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.2); }
+  60%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes row-flash {
+  0%   { background-color: transparent; }
+  25%  { background-color: rgba(34, 197, 94, 0.12); }
+  100% { background-color: transparent; }
+}
+
+.animate-habit-complete {
+  animation: habit-complete 0.4s ease-out;
+}
+
+.animate-row-flash {
+  animation: row-flash 0.5s ease-out;
+}
+</style>

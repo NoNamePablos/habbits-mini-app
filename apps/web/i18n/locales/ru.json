@@ -18,7 +18,19 @@
     "streakDays": "дн.",
     "statStreak": "Лучший стрик",
     "statWeek": "За неделю",
-    "statFreezes": "Заморозки"
+    "statFreezes": "Заморозки",
+    "progressLabel": {
+      "start": "Начни прямо сейчас!",
+      "early": "Хорошее начало!",
+      "midway": "На полпути — не останавливайся!",
+      "almost": "Ещё {count} до идеала",
+      "perfect": "Идеальный день! Так держать!"
+    },
+    "perfectDay": {
+      "title": "Идеальный день!",
+      "subtitle": "Все привычки выполнены. Ты великолепен!",
+      "button": "Отлично!"
+    }
   },
   "profile": {
     "title": "Профиль",
@@ -30,7 +42,11 @@
     "streakFreezes": "Заморозки",
     "achievements": "Достижения",
     "activity": "Активность",
-    "weeklyProgress": "Прогресс за неделю"
+    "weeklyProgress": "Прогресс за неделю",
+    "insights": "Инсайты",
+    "insightBestDay": "Самый продуктивный день — {day}",
+    "insightBestStreak": "Лучший стрик: {name} ({streak} дн.)",
+    "insightWeeklyRate": "На этой неделе выполнено {pct}% привычек"
   },
   "achievements": {
     "title": "Достижения",
@@ -109,7 +125,16 @@
     "statStreak": "Стрик",
     "checkInShort": "Отметить",
     "checkedShort": "Сделано",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "recentDays": "Последние 14 дней"
+  },
+  "challengeTemplate": {
+    "noSugar": "Без сахара",
+    "meditation": "Медитация",
+    "reading": "Чтение",
+    "coldShower": "Холодный душ",
+    "noAlcohol": "Без алкоголя",
+    "workout": "Тренировки"
   },
   "challengeForm": {
     "createTitle": "Новый челлендж",
@@ -167,6 +192,9 @@
     "themeLight": "Светлая",
     "themeDark": "Тёмная",
     "feedback": "Обратная связь",
+    "weekStart": "Начало недели",
+    "weekStartMon": "Понедельник",
+    "weekStartSun": "Воскресенье",
     "account": "Аккаунт",
     "deleteAccount": "Удалить аккаунт",
     "deleteAccountTitle": "Удалить аккаунт?",

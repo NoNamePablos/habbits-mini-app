@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { CreateChallengePayload } from '~/types/challenge'
 import { CHALLENGE_ICON_OPTIONS, DURATION_PRESETS, ALLOWED_MISSES_OPTIONS } from '~/types/challenge'
+import { CHALLENGE_TEMPLATES } from '~/constants'
+import type { ChallengeTemplate } from '~/constants'
 
 interface Props {
   open: boolean
@@ -49,6 +51,14 @@ const onDurationSelect = (val: string): void => {
   }
 }
 
+const applyTemplate = (tmpl: ChallengeTemplate): void => {
+  form.title.value = t(tmpl.titleKey)
+  form.durationDays.value = tmpl.targetDays
+  form.allowedMisses.value = tmpl.allowedMisses
+  form.icon.value = tmpl.icon
+  isCustomDuration.value = false
+}
+
 const onSubmit = (): void => {
   if (!form.validate()) return
   emit('submit', form.getPayload())
@@ -81,6 +91,19 @@ watch(
       </SheetHeader>
 
       <div class="space-y-5 py-4">
+        <div v-if="!editMode" class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <button
+            v-for="tmpl in CHALLENGE_TEMPLATES"
+            :key="tmpl.titleKey"
+            type="button"
+            class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-white/10 text-xs font-medium hover:bg-foreground/5 transition-colors"
+            @click="applyTemplate(tmpl)"
+          >
+            <component :is="resolveIcon(tmpl.icon)" class="h-3 w-3" />
+            {{ $t(tmpl.titleKey) }}
+          </button>
+        </div>
+
         <div class="space-y-2">
           <Label>{{ $t('challengeForm.titleLabel') }}</Label>
           <Input

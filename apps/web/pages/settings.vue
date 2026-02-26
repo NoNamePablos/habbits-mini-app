@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Globe, Info, Bell, Palette, Trash2, MessageCircle } from 'lucide-vue-next'
+import { ArrowLeft, Globe, Info, Bell, Palette, Trash2, MessageCircle, Calendar } from 'lucide-vue-next'
 import { Switch } from '~/components/ui/switch'
 
 type ThemePreference = 'auto' | 'light' | 'dark'
@@ -16,8 +16,10 @@ const api = useApi()
 const { locale } = useI18n()
 const { handleError } = useErrorHandler()
 const authStore = useAuthStore()
-const { hapticNotification } = useTelegram()
+const { hapticNotification, tg } = useTelegram()
 const { preference: themePref, setPreference: setThemePref } = useThemePreference()
+const config = useRuntimeConfig()
+const { startsMonday } = useWeekStart()
 
 const currentLanguage = computed<{ flag: string; label: string }>(() =>
   locale.value === 'ru'
@@ -74,11 +76,14 @@ const themeOptions: { value: ThemePreference; labelKey: string }[] = [
   { value: 'dark', labelKey: 'settings.themeDark' },
 ]
 
+const onFeedback = (): void => {
+  tg?.openLink(config.public.feedbackUrl as string)
+}
+
 const onDeleteAccount = async (): Promise<void> => {
   const success = await authStore.deleteAccount()
   if (success) {
     hapticNotification('warning')
-    const { tg } = useTelegram()
     if (tg?.close) {
       tg.close()
     } else {
@@ -111,6 +116,20 @@ const goBack = (): void => {
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted-foreground">{{ currentLanguage.flag }} {{ currentLanguage.label }}</span>
           </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass" @click="startsMonday = !startsMonday">
+      <CardContent class="pt-4 pb-4">
+        <div class="flex items-center justify-between cursor-pointer">
+          <div class="flex items-center gap-3">
+            <Calendar class="h-4 w-4 text-muted-foreground" />
+            <span class="text-sm font-medium">{{ $t('settings.weekStart') }}</span>
+          </div>
+          <span class="text-sm text-muted-foreground">
+            {{ startsMonday ? $t('settings.weekStartMon') : $t('settings.weekStartSun') }}
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -187,9 +206,9 @@ const goBack = (): void => {
       </CardContent>
     </Card>
 
-    <Card class="glass">
+    <Card class="glass" @click="onFeedback">
       <CardContent class="pt-4 pb-4">
-        <div class="flex items-center gap-3 cursor-pointer" @click="() => {}">
+        <div class="flex items-center gap-3 cursor-pointer">
           <MessageCircle class="h-4 w-4 text-muted-foreground" />
           <span class="text-sm font-medium">{{ $t('settings.feedback') }}</span>
         </div>

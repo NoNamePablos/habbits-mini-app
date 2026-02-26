@@ -2,10 +2,14 @@
 import { User, Zap, Flame, Trophy, Calendar, Target, Award, ChevronRight, Snowflake } from 'lucide-vue-next'
 import { MAX_STREAK_FREEZES } from '~/constants'
 
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
+
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
+const habitsStore = useHabitsStore()
 const goalsStore = useGoalsStore()
+const { t } = useI18n()
 
 const isLoading = ref<boolean>(true)
 
@@ -17,8 +21,47 @@ onMounted(async () => {
     statsStore.fetchSummary(),
     statsStore.fetchHeatmap(),
     goalsStore.fetchHistory(),
+    habitsStore.fetchHabits(),
   ])
   isLoading.value = false
+})
+
+const insights = computed<string[]>(() => {
+  const result: string[] = []
+  const summary = statsStore.summary
+  const habits = toValue(habitsStore.habits)
+
+  if (!summary) return result
+
+  const days = summary.weeklyDays
+  if (days && days.length > 0) {
+    const best = days.reduce((a, b) => {
+      const rateA = a.total > 0 ? a.completed / a.total : 0
+      const rateB = b.total > 0 ? b.completed / b.total : 0
+      return rateB > rateA ? b : a
+    })
+    if (best.total > 0 && best.completed > 0) {
+      const dayName = t(`days.${DAY_KEYS[new Date(best.date + 'T00:00:00').getDay()]}`)
+      result.push(t('profile.insightBestDay', { day: dayName }))
+    }
+  }
+
+  if (habits.length > 0) {
+    const best = habits.reduce((a, b) => b.currentStreak > a.currentStreak ? b : a)
+    if (best.currentStreak >= 7) {
+      result.push(t('profile.insightBestStreak', { name: best.name, streak: best.currentStreak }))
+    }
+  }
+
+  if (summary.weeklyCompletions > 0 && habits.length > 0) {
+    const possible = habits.length * 7
+    const pct = Math.round((summary.weeklyCompletions / possible) * 100)
+    if (pct > 0) {
+      result.push(t('profile.insightWeeklyRate', { pct }))
+    }
+  }
+
+  return result
 })
 </script>
 
@@ -99,6 +142,8 @@ onMounted(async () => {
         </CardContent>
       </Card>
     </div>
+
+    <StatsInsightCard v-if="insights.length > 0" :insights="insights" />
 
     <Card class="glass stagger-item" :style="{ '--stagger': 4 }">
       <CardContent class="pt-4 pb-4">

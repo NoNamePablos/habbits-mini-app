@@ -4,6 +4,7 @@ import type { CreateGoalPayload, Goal } from '~/types/goal'
 import type { DaySummary } from '~/types/stats'
 import { Plus, Sparkles, Flame, Check } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
+import { useStorage } from '@vueuse/core'
 
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
@@ -12,6 +13,7 @@ const goalsStore = useGoalsStore()
 const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
 const { t } = useI18n()
+const { startsMonday } = useWeekStart()
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
@@ -19,6 +21,17 @@ const bestCurrentStreak = computed<number>(() => {
   const habits = toValue(habitsStore.habits)
   if (habits.length === 0) return 0
   return Math.max(...habits.map((h) => h.currentStreak))
+})
+
+const progressLabel = computed<string>(() => {
+  const pct = habitsStore.progressPercent
+  const remaining = habitsStore.totalToday - habitsStore.completedToday
+  if (habitsStore.totalToday === 0) return ''
+  if (pct === 0) return t('home.progressLabel.start')
+  if (pct < 25) return t('home.progressLabel.early')
+  if (pct < 75) return t('home.progressLabel.midway')
+  if (pct < 100) return t('home.progressLabel.almost', { count: remaining })
+  return t('home.progressLabel.perfect')
 })
 
 interface WeekDay {
@@ -35,7 +48,22 @@ const weekDays = computed<WeekDay[]>(() => {
 
   const todayStr = new Date().toISOString().split('T')[0]
 
-  return days.map((d: DaySummary) => {
+  let orderedDays = [...days]
+  if (toValue(startsMonday)) {
+    orderedDays = orderedDays.sort((a, b) => {
+      const dayA = new Date(a.date + 'T00:00:00').getDay()
+      const dayB = new Date(b.date + 'T00:00:00').getDay()
+      return (dayA === 0 ? 7 : dayA) - (dayB === 0 ? 7 : dayB)
+    })
+  } else {
+    orderedDays = orderedDays.sort((a, b) => {
+      const dayA = new Date(a.date + 'T00:00:00').getDay()
+      const dayB = new Date(b.date + 'T00:00:00').getDay()
+      return dayA - dayB
+    })
+  }
+
+  return orderedDays.map((d: DaySummary) => {
     const date = new Date(d.date + 'T00:00:00')
     const dayIndex = date.getDay()
     return {
@@ -63,6 +91,13 @@ const achievementQueue = ref<Array<{ name: string; icon: string | null; xpReward
 const currentAchievement = computed<{ name: string; icon: string | null; xpReward: number } | null>(() =>
   toValue(achievementQueue).length > 0 ? toValue(achievementQueue)[0] : null,
 )
+
+const showPerfectDay = ref<boolean>(false)
+const perfectDayDate = useStorage<string>('perfectDayDate', '')
+const alreadyShownToday = computed<boolean>(() => {
+  const today = new Date().toISOString().split('T')[0]
+  return toValue(perfectDayDate) === today
+})
 
 const onAchievementClose = (): void => {
   achievementQueue.value = toValue(achievementQueue).slice(1)
@@ -165,6 +200,11 @@ const onToggle = async (habitId: number): Promise<void> => {
         }
         showGoalCompleted.value = true
         await goalsStore.fetchActiveGoal()
+      }
+
+      if (habitsStore.progressPercent === 100 && habitsStore.totalToday > 0 && !toValue(alreadyShownToday)) {
+        showPerfectDay.value = true
+        perfectDayDate.value = new Date().toISOString().split('T')[0]
       }
     }
   }
@@ -280,6 +320,9 @@ const onGoalCompletedClose = (): void => {
                 :style="{ width: `${habitsStore.progressPercent}%` }"
               />
             </div>
+            <p v-if="progressLabel" class="text-[11px] text-muted-foreground mt-1.5 text-right">
+              {{ progressLabel }}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -348,6 +391,11 @@ const onGoalCompletedClose = (): void => {
         :show="showStreakMilestone"
         :streak="milestoneStreak"
         @close="showStreakMilestone = false"
+      />
+
+      <GamificationPerfectDayOverlay
+        :show="showPerfectDay"
+        @close="showPerfectDay = false"
       />
 
       <GoalsGoalForm

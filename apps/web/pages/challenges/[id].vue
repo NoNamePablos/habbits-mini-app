@@ -210,6 +210,20 @@ const onEdit = async (data: Partial<CreateChallengePayload>): Promise<void> => {
         {{ $t('challenges.noMissesAllowed') }}
       </div>
 
+      <Card class="glass animate-fade-in-up">
+        <CardContent class="pt-4 pb-4">
+          <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+            <Calendar class="h-3.5 w-3.5" />
+            {{ $t('challenges.recentDays') }}
+          </div>
+          <ChallengesChallengeMiniCalendar
+            :days="days"
+            :start-date="challenge.startDate"
+            :duration-days="challenge.durationDays"
+          />
+        </CardContent>
+      </Card>
+
       <Card class="glass">
         <CardContent class="pt-4 pb-4">
           <ChallengesChallengeDayGrid
