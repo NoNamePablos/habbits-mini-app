@@ -238,6 +238,11 @@
     "used": "Streak freeze protected your streak!",
     "earned": "You earned a streak freeze!"
   },
+  "streakMilestone": {
+    "title": "{streak} days in a row!",
+    "message": "Amazing streak! Keep it going",
+    "button": "Awesome!"
+  },
   "info": {
     "title": "Info"
   },

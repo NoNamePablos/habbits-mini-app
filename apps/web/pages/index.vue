@@ -46,9 +46,13 @@ const weekDays = computed<WeekDay[]>(() => {
   })
 })
 
+const STREAK_MILESTONES = [7, 14, 30, 60, 100, 365] as const
+
 const showCreateForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
 const levelUpLevel = ref<number>(1)
+const showStreakMilestone = ref<boolean>(false)
+const milestoneStreak = ref<number>(0)
 const showAchievementPopup = ref<boolean>(false)
 const achievementQueue = ref<Array<{ name: string; icon: string | null; xpReward: number }>>([])
 const currentAchievement = computed<{ name: string; icon: string | null; xpReward: number } | null>(() =>
@@ -140,6 +144,12 @@ const onToggle = async (habitId: number): Promise<void> => {
           xpReward: a.xpAwarded,
         }))
         showAchievementPopup.value = true
+      }
+
+      const streak = result.habit.currentStreak
+      if (STREAK_MILESTONES.includes(streak as typeof STREAK_MILESTONES[number])) {
+        milestoneStreak.value = streak
+        showStreakMilestone.value = true
       }
     }
   }
@@ -294,6 +304,12 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
         :show="showAchievementPopup"
         :achievement="currentAchievement"
         @close="onAchievementClose"
+      />
+
+      <GamificationStreakMilestoneOverlay
+        :show="showStreakMilestone"
+        :streak="milestoneStreak"
+        @close="showStreakMilestone = false"
       />
 
       <HabitsHomeTourOverlay

@@ -2,7 +2,7 @@ export const ACHIEVEMENT_CATEGORIES = ['streak', 'completion', 'social', 'time']
 export type AchievementCategory = typeof ACHIEVEMENT_CATEGORIES[number]
 
 export interface AchievementCriteria {
-  type: 'streak' | 'total_completions' | 'habit_count' | 'perfect_day' | 'morning_streak'
+  type: 'streak' | 'total_completions' | 'habit_count' | 'perfect_day' | 'morning_streak' | 'challenge_created' | 'challenge_completed' | 'challenge_completed_count' | 'challenge_no_misses'
   value: number
 }
 
@@ -18,6 +18,8 @@ export interface Achievement {
   isHidden: boolean
   unlocked: boolean
   unlockedAt: string | null
+  progress: number
+  progressMax: number
 }
 
 export interface GamificationProfile {

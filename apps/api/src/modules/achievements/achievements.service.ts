@@ -17,6 +17,8 @@ import {
 interface AchievementWithStatus extends Achievement {
   unlocked: boolean;
   unlockedAt: Date | null;
+  progress: number;
+  progressMax: number;
 }
 
 interface UnlockedAchievement {
@@ -200,11 +202,84 @@ export class AchievementsService implements OnModuleInit {
       unlocked.map((ua) => [ua.achievementId, ua.unlockedAt]),
     );
 
+    const progressMap = await this.calculateProgress(userId);
+
     return achievements.map((a) => ({
       ...a,
       unlocked: unlockedMap.has(a.id),
       unlockedAt: unlockedMap.get(a.id) ?? null,
+      progress: unlockedMap.has(a.id)
+        ? a.criteria.value
+        : Math.min(progressMap.get(a.criteria.type) ?? 0, a.criteria.value),
+      progressMax: a.criteria.value,
     }));
+  }
+
+  private async calculateProgress(
+    userId: number,
+  ): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+
+    const habits = await this.habitsRepo.find({
+      where: { userId, isActive: true },
+    });
+
+    // streak: max currentStreak among active habits
+    const maxStreak = habits.length > 0
+      ? Math.max(...habits.map((h) => h.currentStreak))
+      : 0;
+    result.set('streak', maxStreak);
+
+    // morning_streak: max currentStreak among morning habits
+    const morningHabits = habits.filter(
+      (h) => h.timeOfDay === TimeOfDay.MORNING,
+    );
+    const morningStreak = morningHabits.length > 0
+      ? Math.max(...morningHabits.map((h) => h.currentStreak))
+      : 0;
+    result.set('morning_streak', morningStreak);
+
+    // habit_count: number of active habits
+    result.set('habit_count', habits.length);
+
+    // total_completions: max completions across any single habit
+    const completionCounts = await this.completionsRepo
+      .createQueryBuilder('c')
+      .select('c.habitId', 'habitId')
+      .addSelect('COUNT(*)', 'cnt')
+      .where('c.userId = :userId', { userId })
+      .groupBy('c.habitId')
+      .getRawMany<{ habitId: number; cnt: string }>();
+
+    const maxCompletions = completionCounts.length > 0
+      ? Math.max(...completionCounts.map((r) => Number(r.cnt)))
+      : 0;
+    result.set('total_completions', maxCompletions);
+
+    // perfect_day: binary (0 or 1), check today
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = await this.completionsRepo.count({
+      where: { userId, completedDate: today },
+    });
+    result.set('perfect_day', habits.length > 0 && todayCount >= habits.length ? 1 : 0);
+
+    // challenge_created: total challenges
+    const challengeCount = await this.challengesRepo.count({
+      where: { userId },
+    });
+    result.set('challenge_created', challengeCount);
+
+    // challenge_completed / challenge_completed_count
+    const completedChallenges = await this.challengesRepo.count({
+      where: { userId, status: ChallengeStatus.COMPLETED },
+    });
+    result.set('challenge_completed', completedChallenges);
+    result.set('challenge_completed_count', completedChallenges);
+
+    // challenge_no_misses: not trackable as progress (binary), show 0
+    result.set('challenge_no_misses', 0);
+
+    return result;
   }
 
   async checkAfterCompletion(

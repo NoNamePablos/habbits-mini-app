@@ -27,10 +27,21 @@ const { resolveIcon } = useHabitIcon()
           :class="achievement.unlocked ? 'text-primary icon-glow' : 'text-muted-foreground'"
         />
       </div>
-      <div>
+      <div class="w-full min-w-0">
         <div class="text-xs font-medium truncate">{{ achievement.name }}</div>
         <div class="text-[10px] text-muted-foreground mt-0.5">
           {{ achievement.unlocked ? `+${achievement.xpReward} XP` : achievement.description }}
+        </div>
+        <div v-if="!achievement.unlocked && achievement.progressMax > 0" class="w-full mt-1.5">
+          <div class="h-1 bg-foreground/10 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-primary/50 rounded-full transition-all"
+              :style="{ width: `${Math.min((achievement.progress / achievement.progressMax) * 100, 100)}%` }"
+            />
+          </div>
+          <div class="text-[9px] text-muted-foreground mt-0.5">
+            {{ achievement.progress }}/{{ achievement.progressMax }}
+          </div>
         </div>
       </div>
     </CardContent>
