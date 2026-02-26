@@ -38,7 +38,8 @@
     "myHabits": "My Habits",
     "habitsForToday": "{count} for today",
     "filterAll": "All",
-    "filterEmpty": "No habits for this filter"
+    "filterEmpty": "No habits for this filter",
+    "focusMode": "Focus Mode"
   },
   "profile": {
     "title": "Profile",
@@ -160,7 +161,12 @@
     "recentDays": "Recent 14 days",
     "statsActive": "active",
     "statsCompleted": "completed",
-    "statsTotal": "total"
+    "statsTotal": "total",
+    "statsSuccessRate": "success",
+    "abandonReasonTooHard": "Too difficult",
+    "abandonReasonSchedule": "Schedule changed",
+    "abandonReasonEarly": "Goal achieved early",
+    "abandonReasonOther": "Other reason"
   },
   "challengeTemplate": {
     "noSugar": "No Sugar",
@@ -412,5 +418,10 @@
     "feature3": "Earn XP and unlock achievements",
     "dontShowAgain": "Don't show this again",
     "button": "Let's go!"
+  },
+  "search": {
+    "placeholder": "Search habits and challenges...",
+    "noResults": "Nothing found",
+    "hint": "Start typing a name"
   }
 }

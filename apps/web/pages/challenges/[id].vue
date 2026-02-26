@@ -22,6 +22,15 @@ const showAchievementPopup = ref<boolean>(false)
 const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 const showChallengeComplete = ref<boolean>(false)
 const completionXpBonus = ref<number>(0)
+const showAbandonSheet = ref<boolean>(false)
+const selectedAbandonReason = ref<string>('')
+
+const ABANDON_REASONS = [
+  'challenges.abandonReasonTooHard',
+  'challenges.abandonReasonSchedule',
+  'challenges.abandonReasonEarly',
+  'challenges.abandonReasonOther',
+] as const
 
 const challengeId = computed<number>(() => Number(route.params.id))
 
@@ -118,9 +127,12 @@ const onUndoCheckIn = async (): Promise<void> => {
 const onAbandon = async (): Promise<void> => {
   const c = toValue(challenge)
   if (!c) return
-  const updated = await challengesStore.abandonChallenge(c.id)
+  const reason = toValue(selectedAbandonReason) || undefined
+  const updated = await challengesStore.abandonChallenge(c.id, reason)
   if (updated) {
     challenge.value = updated
+    showAbandonSheet.value = false
+    selectedAbandonReason.value = ''
     showSuccess('success.challengeAbandoned')
   }
 }
@@ -339,27 +351,50 @@ const onEdit = async (data: Partial<CreateChallengePayload>): Promise<void> => {
           {{ $t('challenges.edit') }}
         </Button>
 
-        <AlertDialog>
-          <AlertDialogTrigger as-child>
-            <Button variant="outline" class="glass">
-              <Flag class="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent class="glass-heavy">
-            <AlertDialogHeader>
-              <AlertDialogTitle>{{ $t('challenges.abandonConfirmTitle') }}</AlertDialogTitle>
-              <AlertDialogDescription>
+        <Button variant="outline" class="glass" @click="showAbandonSheet = true">
+          <Flag class="h-4 w-4" />
+        </Button>
+
+        <Sheet :open="showAbandonSheet" @update:open="showAbandonSheet = $event">
+          <SheetContent side="bottom" class="glass-heavy rounded-t-2xl pb-8">
+            <SheetHeader class="mb-4">
+              <SheetTitle>{{ $t('challenges.abandonConfirmTitle') }}</SheetTitle>
+              <SheetDescription>
                 {{ $t('challenges.abandonConfirmDescription', { days: challenge.completedDays }) }}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{{ $t('challenges.cancel') }}</AlertDialogCancel>
-              <AlertDialogAction @click="onAbandon">
+              </SheetDescription>
+            </SheetHeader>
+            <div class="space-y-2 mb-6">
+              <button
+                v-for="reasonKey in ABANDON_REASONS"
+                :key="reasonKey"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-sm"
+                :class="selectedAbandonReason === reasonKey
+                  ? 'border-primary bg-primary/10 text-primary font-medium'
+                  : 'border-border bg-transparent text-foreground'"
+                @click="selectedAbandonReason = reasonKey"
+              >
+                <span>{{ $t(reasonKey) }}</span>
+                <div
+                  class="w-4 h-4 rounded-full border-2 transition-colors shrink-0"
+                  :class="selectedAbandonReason === reasonKey ? 'border-primary bg-primary' : 'border-muted-foreground/30'"
+                />
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <Button variant="outline" class="flex-1" @click="showAbandonSheet = false">
+                {{ $t('challenges.cancel') }}
+              </Button>
+              <Button
+                variant="destructive"
+                class="flex-1"
+                :disabled="!selectedAbandonReason"
+                @click="onAbandon"
+              >
                 {{ $t('challenges.abandon') }}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
 
         <AlertDialog>
           <AlertDialogTrigger as-child>

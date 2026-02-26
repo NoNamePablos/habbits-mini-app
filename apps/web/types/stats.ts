@@ -7,6 +7,8 @@ export interface DaySummary {
 export interface StatsSummary {
   weeklyCompletions: number
   monthlyCompletions: number
+  prevWeekCompletions: number
+  prevMonthCompletions: number
   weeklyDays: DaySummary[]
   currentActiveHabits: number
   bestStreakOverall: number

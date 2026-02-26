@@ -1,4 +1,8 @@
 import tailwindcss from '@tailwindcss/vite'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as { version: string }
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
@@ -47,6 +51,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: '/api',
       feedbackUrl: 'https://t.me/habitsapp_feedback',
+      appVersion: pkg.version,
     },
   },
 

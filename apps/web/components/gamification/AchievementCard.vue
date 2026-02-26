@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import type { Achievement } from '~/types/gamification'
 import { Lock } from 'lucide-vue-next'
+import type { Component } from 'vue'
 
 interface Props {
   achievement: Achievement
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const { resolveIcon } = useHabitIcon()
+
+const iconComponent = computed<Component>(() => {
+  if (props.achievement.icon) return resolveIcon(props.achievement.icon)
+  return Lock
+})
 
 const getRarity = (xpReward: number): { label: string; colorClass: string } => {
   if (xpReward > 200) return { label: '★★★', colorClass: 'text-amber-400' }
@@ -25,13 +31,18 @@ const getRarity = (xpReward: number): { label: string; colorClass: string } => {
   >
     <CardContent class="pt-4 pb-4 flex flex-col items-center text-center gap-2">
       <div
-        class="w-12 h-12 rounded-full flex items-center justify-center"
+        class="w-12 h-12 rounded-full flex items-center justify-center relative"
         :class="achievement.unlocked ? 'bg-primary/20 animate-gentle-pulse' : 'bg-muted'"
       >
         <component
-          :is="achievement.unlocked && achievement.icon ? resolveIcon(achievement.icon) : Lock"
-          class="h-5 w-5"
-          :class="achievement.unlocked ? 'text-primary icon-glow' : 'text-muted-foreground'"
+          :is="iconComponent"
+          class="h-5 w-5 transition-all"
+          :class="achievement.unlocked ? 'text-primary icon-glow' : 'text-muted-foreground/30'"
+          :style="!achievement.unlocked ? 'filter: grayscale(1)' : ''"
+        />
+        <Lock
+          v-if="!achievement.unlocked"
+          class="absolute bottom-0.5 right-0.5 h-3 w-3 text-muted-foreground/60"
         />
       </div>
       <div class="w-full min-w-0">

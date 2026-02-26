@@ -14,6 +14,7 @@ const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
 const { t } = useI18n()
 const { startsMonday } = useWeekStart()
+const { focusMode, currentTimeOfDay } = useFocusMode()
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
@@ -78,6 +79,10 @@ const habitFilter = ref<TimeOfDay | 'all'>('all')
 
 const filteredGroups = computed(() => {
   const groups = habitsStore.groupedByTimeOfDay
+  if (toValue(focusMode)) {
+    const tod = toValue(currentTimeOfDay)
+    return groups.filter((g) => g.key === tod || g.key === 'anytime')
+  }
   if (toValue(habitFilter) === 'all') return groups
   return groups.filter((g) => g.key === toValue(habitFilter))
 })
@@ -284,7 +289,9 @@ const onGoalCompletedClose = (): void => {
         <HomeHabitsSectionHeader
           :count="filteredCount"
           :filter="habitFilter"
+          :focus-mode="focusMode"
           @update:filter="habitFilter = $event"
+          @toggle:focus-mode="focusMode = !focusMode"
         />
 
         <HabitsHabitList

@@ -38,7 +38,8 @@
     "myHabits": "Мои привычки",
     "habitsForToday": "{count} на сегодня",
     "filterAll": "Все",
-    "filterEmpty": "Нет привычек для этого фильтра"
+    "filterEmpty": "Нет привычек для этого фильтра",
+    "focusMode": "Режим фокуса"
   },
   "profile": {
     "title": "Профиль",
@@ -160,7 +161,12 @@
     "recentDays": "Последние 14 дней",
     "statsActive": "активных",
     "statsCompleted": "пройдено",
-    "statsTotal": "всего"
+    "statsTotal": "всего",
+    "statsSuccessRate": "успех",
+    "abandonReasonTooHard": "Слишком сложно",
+    "abandonReasonSchedule": "График изменился",
+    "abandonReasonEarly": "Цель достигнута досрочно",
+    "abandonReasonOther": "Другая причина"
   },
   "challengeTemplate": {
     "noSugar": "Без сахара",
@@ -412,5 +418,10 @@
     "feature3": "Получай XP и открывай достижения",
     "dontShowAgain": "Больше не показывать",
     "button": "Поехали!"
+  },
+  "search": {
+    "placeholder": "Поиск привычек и челленджей...",
+    "noResults": "Ничего не найдено",
+    "hint": "Начни вводить название"
   }
 }

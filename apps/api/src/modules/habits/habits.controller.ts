@@ -19,6 +19,7 @@ import { CreateHabitDto } from './dto/create-habit.dto';
 import { BatchCreateHabitsDto } from './dto/batch-create-habits.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
+import { ReorderHabitsDto } from './dto/reorder-habits.dto';
 import { Achievement } from '../achievements/entities/achievement.entity';
 import { Goal } from '../goals/entities/goal.entity';
 
@@ -78,6 +79,14 @@ export class HabitsController {
     @Body() dto: BatchCreateHabitsDto,
   ): Promise<Habit[]> {
     return this.habitsService.createBatch(user.id, dto.habits);
+  }
+
+  @Patch('reorder')
+  async reorder(
+    @TelegramUser() user: User,
+    @Body() dto: ReorderHabitsDto,
+  ): Promise<void> {
+    return this.habitsService.reorder(user.id, dto.orderedIds);
   }
 
   @Get(':id')

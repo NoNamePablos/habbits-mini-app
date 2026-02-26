@@ -64,4 +64,7 @@ export class Challenge extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   completedAt: Date | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  abandonReason: string | null;
 }

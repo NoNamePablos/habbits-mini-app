@@ -33,12 +33,12 @@ const getDayNumber = (dateStr: string): number =>
             class="w-8 h-8 rounded-full flex items-center justify-center transition-all text-[11px] font-bold"
             :class="[
               day.isFuture
-                ? 'bg-secondary/20 text-muted-foreground/40'
+                ? 'bg-secondary/20 text-muted-foreground/30'
                 : day.completed >= day.total && day.total > 0
                   ? 'bg-green-500 text-white'
                   : day.completed > 0
                     ? 'bg-green-500/25 text-green-500 border border-green-500/50'
-                    : 'bg-secondary/30 text-muted-foreground',
+                    : 'bg-destructive/10 text-muted-foreground border border-destructive/25',
               day.isToday ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : '',
             ]"
           >

@@ -41,11 +41,14 @@ defineProps<Props>()
 
         <ChallengesChallengeProgress
           :percent="percent"
-          :size="100"
-          :stroke-width="8"
-          color="var(--primary)"
+          :size="140"
+          :stroke-width="10"
+          color="hsl(var(--primary))"
         >
-          <span class="text-lg font-black">{{ percent }}%</span>
+          <div class="text-center">
+            <div class="text-2xl font-bold">{{ percent }}%</div>
+            <div class="text-[10px] text-muted-foreground">{{ $t('home.habitsCompleted') }}</div>
+          </div>
         </ChallengesChallengeProgress>
       </div>
     </CardContent>

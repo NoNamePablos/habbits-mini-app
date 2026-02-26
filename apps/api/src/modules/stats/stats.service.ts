@@ -14,6 +14,8 @@ export interface DaySummary {
 export interface StatsSummary {
   weeklyCompletions: number;
   monthlyCompletions: number;
+  prevWeekCompletions: number;
+  prevMonthCompletions: number;
   weeklyDays: DaySummary[];
   currentActiveHabits: number;
   bestStreakOverall: number;
@@ -56,14 +58,22 @@ export class StatsService {
     const today = new Date();
     const weekAgo = this.addDays(today, -7);
     const monthAgo = this.addDays(today, -30);
+    const twoWeeksAgo = this.addDays(today, -14);
+    const twoMonthsAgo = this.addDays(today, -60);
 
     const weekStr = this.formatDate(weekAgo);
     const monthStr = this.formatDate(monthAgo);
+    const twoWeeksStr = this.formatDate(twoWeeksAgo);
+    const twoMonthsStr = this.formatDate(twoMonthsAgo);
     const todayStr = this.formatDate(today);
+    const weekAgoStr = this.formatDate(this.addDays(weekAgo, -1));
+    const monthAgoStr = this.formatDate(this.addDays(monthAgo, -1));
 
     const [
       weeklyCompletions,
       monthlyCompletions,
+      prevWeekCompletions,
+      prevMonthCompletions,
       activeHabits,
       weekCompletions,
     ] = await Promise.all([
@@ -72,6 +82,12 @@ export class StatsService {
       }),
       this.completionsRepo.count({
         where: { userId, completedDate: Between(monthStr, todayStr) },
+      }),
+      this.completionsRepo.count({
+        where: { userId, completedDate: Between(twoWeeksStr, weekAgoStr) },
+      }),
+      this.completionsRepo.count({
+        where: { userId, completedDate: Between(twoMonthsStr, monthAgoStr) },
       }),
       this.habitsRepo.find({
         where: { userId, isActive: true },
@@ -109,6 +125,8 @@ export class StatsService {
     return {
       weeklyCompletions,
       monthlyCompletions,
+      prevWeekCompletions,
+      prevMonthCompletions,
       weeklyDays,
       currentActiveHabits: activeHabits.length,
       bestStreakOverall,

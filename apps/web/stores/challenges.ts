@@ -106,9 +106,9 @@ export const useChallengesStore = defineStore('challenges', () => {
     }
   }
 
-  const abandonChallenge = async (id: number): Promise<Challenge | null> => {
+  const abandonChallenge = async (id: number, reason?: string): Promise<Challenge | null> => {
     try {
-      const updated = await api.post<Challenge>(`/challenges/${id}/abandon`)
+      const updated = await api.post<Challenge>(`/challenges/${id}/abandon`, reason ? { reason } : {})
       const idx = toValue(challenges).findIndex((c) => c.id === id)
       if (idx !== -1) {
         challenges.value[idx] = { ...updated, todayCheckedIn: false }

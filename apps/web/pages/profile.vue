@@ -108,13 +108,31 @@ const personalRecords = computed<HabitRecord[]>(() => {
   if (bestStreakHabit.bestStreak > 0) {
     records.push({ label: t('profile.recordBestStreak'), value: `${bestStreakHabit.bestStreak}d — ${bestStreakHabit.name}`, icon: '🔥' })
   }
-  if (summary?.bestStreakOverall > 0) {
+  if (summary && summary.bestStreakOverall > 0) {
     records.push({ label: t('profile.recordOverallStreak'), value: `${summary.bestStreakOverall} ${t('home.streakDays')}`, icon: '🏆' })
   }
-  if (summary?.weeklyCompletions > 0) {
+  if (summary && summary.weeklyCompletions > 0) {
     records.push({ label: t('profile.recordWeekly'), value: summary.weeklyCompletions, icon: '⚡' })
   }
   return records
+})
+
+type TrendDirection = 'up' | 'down' | 'neutral'
+
+const weeklyTrend = computed<TrendDirection>(() => {
+  const s = statsStore.summary
+  if (!s) return 'neutral'
+  if (s.weeklyCompletions > s.prevWeekCompletions) return 'up'
+  if (s.weeklyCompletions < s.prevWeekCompletions) return 'down'
+  return 'neutral'
+})
+
+const monthlyTrend = computed<TrendDirection>(() => {
+  const s = statsStore.summary
+  if (!s) return 'neutral'
+  if (s.monthlyCompletions > s.prevMonthCompletions) return 'up'
+  if (s.monthlyCompletions < s.prevMonthCompletions) return 'down'
+  return 'neutral'
 })
 
 const topHabits = computed(() =>
@@ -173,7 +191,11 @@ const strugglingHabits = computed(() =>
     <div v-if="statsStore.summary" class="grid grid-cols-2 gap-3">
       <Card class="glass stagger-item" :style="{ '--stagger': 0 }">
         <CardContent class="pt-4 pb-4 text-center">
-          <div class="text-2xl font-bold">{{ statsStore.summary.weeklyCompletions }}</div>
+          <div class="flex items-center justify-center gap-1.5">
+            <span class="text-2xl font-bold">{{ statsStore.summary.weeklyCompletions }}</span>
+            <TrendingUp v-if="weeklyTrend === 'up'" class="h-4 w-4 text-green-500 shrink-0" />
+            <TrendingDown v-else-if="weeklyTrend === 'down'" class="h-4 w-4 text-red-400 shrink-0" />
+          </div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
             <Target class="h-3 w-3 text-primary" />
             {{ $t('profile.weekLabel') }}
@@ -182,7 +204,11 @@ const strugglingHabits = computed(() =>
       </Card>
       <Card class="glass stagger-item" :style="{ '--stagger': 1 }">
         <CardContent class="pt-4 pb-4 text-center">
-          <div class="text-2xl font-bold">{{ statsStore.summary.monthlyCompletions }}</div>
+          <div class="flex items-center justify-center gap-1.5">
+            <span class="text-2xl font-bold">{{ statsStore.summary.monthlyCompletions }}</span>
+            <TrendingUp v-if="monthlyTrend === 'up'" class="h-4 w-4 text-green-500 shrink-0" />
+            <TrendingDown v-else-if="monthlyTrend === 'down'" class="h-4 w-4 text-red-400 shrink-0" />
+          </div>
           <div class="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1">
             <Calendar class="h-3 w-3 text-primary" />
             {{ $t('profile.monthLabel') }}

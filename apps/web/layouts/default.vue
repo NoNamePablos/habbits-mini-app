@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Flame, Home, Trophy, User, Settings } from 'lucide-vue-next'
+import { Flame, Home, Trophy, User, Settings, Search } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const authStore = useAuthStore()
+const showSearch = ref<boolean>(false)
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
 const route = useRoute()
@@ -86,9 +87,14 @@ const onWeeklySummaryClose = (): void => {
         <Flame class="h-4 w-4 text-primary icon-glow" />
         <span class="text-sm font-bold tracking-wide">{{ $t('nav.appTitle') }}</span>
       </div>
-      <NuxtLink to="/settings" class="text-muted-foreground hover:text-foreground transition-colors p-1">
-        <Settings class="h-4.5 w-4.5" />
-      </NuxtLink>
+      <div class="flex items-center gap-1">
+        <button class="text-muted-foreground hover:text-foreground transition-colors p-1" @click="showSearch = true">
+          <Search class="h-4 w-4" />
+        </button>
+        <NuxtLink to="/settings" class="text-muted-foreground hover:text-foreground transition-colors p-1">
+          <Settings class="h-4.5 w-4.5" />
+        </NuxtLink>
+      </div>
     </header>
 
     <main class="flex-1 overflow-y-auto">
@@ -135,6 +141,8 @@ const onWeeklySummaryClose = (): void => {
         <span class="text-[10px] font-medium">{{ tab.label }}</span>
       </NuxtLink>
     </nav>
+
+    <SharedGlobalSearch v-model:open="showSearch" />
 
     <GamificationDailyBonusOverlay
       :show="showDailyBonus"

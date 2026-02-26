@@ -18,6 +18,7 @@ import { ChallengeDay } from './entities/challenge-day.entity';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { CheckInChallengeDto } from './dto/check-in-challenge.dto';
+import { AbandonChallengeDto } from './dto/abandon-challenge.dto';
 import { Achievement } from '../achievements/entities/achievement.entity';
 
 interface ChallengesListResponse {
@@ -115,7 +116,8 @@ export class ChallengesController {
   async abandon(
     @TelegramUser() user: User,
     @Param('id', ParseIntPipe) id: number,
+    @Body() dto: AbandonChallengeDto,
   ): Promise<Challenge> {
-    return this.challengesService.abandon(id, user.id);
+    return this.challengesService.abandon(id, user.id, dto.reason);
   }
 }

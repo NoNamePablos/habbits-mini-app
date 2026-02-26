@@ -168,6 +168,21 @@ export const useHabitsStore = defineStore('habits', () => {
     }
   }
 
+  const reorderHabits = async (orderedIds: number[]): Promise<void> => {
+    // Optimistic update: reorder local habits array
+    const sorted = [...toValue(habits)].sort((a, b) => {
+      const ai = orderedIds.indexOf(a.id)
+      const bi = orderedIds.indexOf(b.id)
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+    })
+    habits.value = sorted
+    try {
+      await api.patch('/habits/reorder', { orderedIds })
+    } catch (error) {
+      handleError(error, 'errors.unknown')
+    }
+  }
+
   return {
     habits,
     todayCompletions,
@@ -185,5 +200,6 @@ export const useHabitsStore = defineStore('habits', () => {
     createBatch,
     updateHabit,
     deleteHabit,
+    reorderHabits,
   }
 })

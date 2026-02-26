@@ -112,6 +112,14 @@ export class HabitsService {
     await this.habitsRepo.remove(habit);
   }
 
+  async reorder(userId: number, orderedIds: number[]): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await manager.update(Habit, { id: orderedIds[i], userId }, { sortOrder: i });
+      }
+    });
+  }
+
   async complete(
     id: number,
     userId: number,

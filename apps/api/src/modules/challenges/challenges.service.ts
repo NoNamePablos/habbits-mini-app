@@ -325,7 +325,7 @@ export class ChallengesService {
     return this.challengesRepo.save(challenge);
   }
 
-  async abandon(id: number, userId: number): Promise<Challenge> {
+  async abandon(id: number, userId: number, reason?: string): Promise<Challenge> {
     const challenge = await this.findOneOrFail(id, userId);
 
     if (challenge.status !== ChallengeStatus.ACTIVE) {
@@ -333,6 +333,7 @@ export class ChallengesService {
     }
 
     challenge.status = ChallengeStatus.ABANDONED;
+    challenge.abandonReason = reason ?? null;
     return this.challengesRepo.save(challenge);
   }
 

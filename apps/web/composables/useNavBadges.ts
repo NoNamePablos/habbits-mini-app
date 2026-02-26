@@ -6,7 +6,7 @@ export const useNavBadges = () => {
 
   const achievementsBadge = computed<number>(() => {
     const current = gamificationStore.unlockedCount
-    const seen = toValue(lastSeenAchievements)
+    const seen = toValue(lastSeenAchievements) ?? 0
     return Math.max(0, current - seen)
   })
 

@@ -82,7 +82,7 @@ const themeOptions: { value: ThemePreference; labelKey: string }[] = [
 const { showSuccess } = useErrorHandler()
 
 const onFeedback = (): void => {
-  tg?.openLink(config.public.feedbackUrl as string)
+  ;(tg as unknown as { openLink: (url: string) => void })?.openLink(config.public.feedbackUrl as string)
 }
 
 const onDndToggle = (checked: boolean): void => {
@@ -218,11 +218,11 @@ const goBack = (): void => {
               <span class="text-sm font-medium">{{ $t('settings.morningReminder') }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <input
+              <Input
                 v-if="notifPrefs.morningEnabled"
                 type="time"
                 :value="notifPrefs.morningTime"
-                class="time-input"
+                class="h-8 w-22 text-xs text-center px-2"
                 @change="onMorningTimeChange"
               />
               <Switch
@@ -239,11 +239,11 @@ const goBack = (): void => {
               <span class="text-sm font-medium">{{ $t('settings.eveningReminder') }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <input
+              <Input
                 v-if="notifPrefs.eveningEnabled"
                 type="time"
                 :value="notifPrefs.eveningTime"
-                class="time-input"
+                class="h-8 w-22 text-xs text-center px-2"
                 @change="onEveningTimeChange"
               />
               <Switch
@@ -268,11 +268,11 @@ const goBack = (): void => {
           <div v-if="notifPrefs.dndEnabled" class="flex items-center gap-4 pl-6">
             <div class="flex items-center gap-2">
               <span class="text-xs text-muted-foreground">{{ $t('settings.dndStart') }}</span>
-              <input type="time" :value="notifPrefs.dndStart" class="time-input" @change="onDndStartChange" />
+              <Input type="time" :value="notifPrefs.dndStart" class="h-8 w-22 text-xs text-center px-2" @change="onDndStartChange" />
             </div>
             <div class="flex items-center gap-2">
               <span class="text-xs text-muted-foreground">{{ $t('settings.dndEnd') }}</span>
-              <input type="time" :value="notifPrefs.dndEnd" class="time-input" @change="onDndEndChange" />
+              <Input type="time" :value="notifPrefs.dndEnd" class="h-8 w-22 text-xs text-center px-2" @change="onDndEndChange" />
             </div>
           </div>
         </div>
@@ -315,7 +315,7 @@ const goBack = (): void => {
             <Info class="h-4 w-4 text-muted-foreground" />
             <span class="text-sm font-medium">{{ $t('settings.about') }}</span>
           </div>
-          <span class="text-sm text-muted-foreground">v0.1.0</span>
+          <span class="text-sm text-muted-foreground">v{{ config.public.appVersion }}</span>
         </div>
       </CardContent>
     </Card>
@@ -349,19 +349,3 @@ const goBack = (): void => {
   </div>
 </template>
 
-<style lang="scss" scoped>
-.time-input {
-  background: transparent;
-  border: 1px solid hsl(var(--border));
-  border-radius: 8px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8rem;
-  color: hsl(var(--foreground));
-  width: 5.5rem;
-  text-align: center;
-
-  &::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
-  }
-}
-</style>
