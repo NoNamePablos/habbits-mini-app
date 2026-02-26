@@ -24,12 +24,20 @@ export const useGamificationStore = defineStore('gamification', () => {
     toValue(achievements).filter((a) => !a.isHidden || a.unlocked).length,
   )
 
+  let pendingFetch: Promise<void> | null = null
+
   const fetchProfile = async (): Promise<void> => {
-    try {
-      profile.value = await api.get<GamificationProfile>('/gamification/profile')
-    } catch (error) {
-      handleError(error, 'errors.fetchProfile')
-    }
+    if (pendingFetch) return pendingFetch
+    pendingFetch = (async () => {
+      try {
+        profile.value = await api.get<GamificationProfile>('/gamification/profile')
+      } catch (error: unknown) {
+        handleError(error, 'errors.fetchProfile')
+      } finally {
+        pendingFetch = null
+      }
+    })()
+    return pendingFetch
   }
 
   const fetchAchievements = async (): Promise<void> => {

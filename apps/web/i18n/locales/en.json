@@ -51,7 +51,9 @@
     "deleteConfirmTitle": "Delete habit?",
     "deleteConfirmDescription": "This action cannot be undone. All history will be deleted.",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "uncompleted": "Unmarked",
+    "undo": "Undo"
   },
   "habitForm": {
     "createTitle": "New habit",
@@ -242,9 +244,12 @@
   "welcome": {
     "greeting": "Hi, {name}!",
     "description": "A habit tracker that helps you get better every day",
-    "feature1": "Create habits and check them off daily",
-    "feature2": "Build streaks and protect your progress",
-    "feature3": "Earn XP, level up, and unlock achievements",
+    "step1Title": "1. Add habits",
+    "step1Text": "Pick from templates or create your own",
+    "step2Title": "2. Check in daily",
+    "step2Text": "Tap the circle — build your streak",
+    "step3Title": "3. Grow and achieve",
+    "step3Text": "Earn XP, level up, and unlock achievements",
     "button": "Get Started"
   },
   "onboarding": {
