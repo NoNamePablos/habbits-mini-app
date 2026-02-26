@@ -25,10 +25,10 @@ onMounted(() => {
   }, 100)
 })
 
-const features = [
-  { icon: Target, key: 'welcome.feature1' },
-  { icon: Flame, key: 'welcome.feature2' },
-  { icon: Trophy, key: 'welcome.feature3' },
+const steps = [
+  { icon: Target, titleKey: 'welcome.step1Title', textKey: 'welcome.step1Text' },
+  { icon: Flame, titleKey: 'welcome.step2Title', textKey: 'welcome.step2Text' },
+  { icon: Trophy, titleKey: 'welcome.step3Title', textKey: 'welcome.step3Text' },
 ] as const
 
 const onStart = (): void => {
@@ -69,16 +69,19 @@ const onStart = (): void => {
 
     <div class="welcome-features">
       <div
-        v-for="(feature, index) in features"
-        :key="feature.key"
+        v-for="(step, index) in steps"
+        :key="step.titleKey"
         class="welcome-stagger welcome-feature"
         :class="{ 'welcome-stagger--visible': isVisible }"
         :style="{ '--stagger': index + 3 }"
       >
         <div class="welcome-feature__icon">
-          <component :is="feature.icon" class="h-5 w-5 text-primary" />
+          <component :is="step.icon" class="h-5 w-5 text-primary" />
         </div>
-        <span class="text-sm text-foreground">{{ t(feature.key) }}</span>
+        <div class="flex flex-col">
+          <span class="text-sm font-semibold text-foreground">{{ t(step.titleKey) }}</span>
+          <span class="text-xs text-muted-foreground">{{ t(step.textKey) }}</span>
+        </div>
       </div>
     </div>
 

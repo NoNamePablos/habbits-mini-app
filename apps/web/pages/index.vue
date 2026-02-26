@@ -2,6 +2,7 @@
 import type { CreateHabitPayload } from '~/types/habit'
 import type { DaySummary } from '~/types/stats'
 import { Plus, Sparkles, Flame, Check } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
 
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
@@ -49,7 +50,17 @@ const showCreateForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
 const levelUpLevel = ref<number>(1)
 const showAchievementPopup = ref<boolean>(false)
-const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
+const achievementQueue = ref<Array<{ name: string; icon: string | null; xpReward: number }>>([])
+const currentAchievement = computed<{ name: string; icon: string | null; xpReward: number } | null>(() =>
+  toValue(achievementQueue).length > 0 ? toValue(achievementQueue)[0] : null,
+)
+
+const onAchievementClose = (): void => {
+  achievementQueue.value = toValue(achievementQueue).slice(1)
+  if (toValue(achievementQueue).length === 0) {
+    showAchievementPopup.value = false
+  }
+}
 
 // Onboarding tour
 const { hasSeenOnboarding: hasSeenHomeTour, markAsSeen: markHomeTourSeen } = useOnboarding('homeTour')
@@ -94,7 +105,15 @@ const onToggle = async (habitId: number): Promise<void> => {
   const today = new Date().toISOString().split('T')[0]
 
   if (habitsStore.isCompleted(habitId)) {
+    const habit = toValue(habitsStore.habits).find((h) => h.id === habitId)
     await habitsStore.uncompleteHabit(habitId, today)
+    toast(t('habit.uncompleted'), {
+      description: habit?.name,
+      action: {
+        label: t('habit.undo'),
+        onClick: () => habitsStore.completeHabit(habitId),
+      },
+    })
   } else {
     const result = await habitsStore.completeHabit(habitId)
     if (result) {
@@ -115,12 +134,11 @@ const onToggle = async (habitId: number): Promise<void> => {
       }
 
       if (result.unlockedAchievements.length > 0) {
-        const first = result.unlockedAchievements[0]
-        pendingAchievement.value = {
-          name: first.achievement.name,
-          icon: first.achievement.icon,
-          xpReward: first.xpAwarded,
-        }
+        achievementQueue.value = result.unlockedAchievements.map((a) => ({
+          name: a.achievement.name,
+          icon: a.achievement.icon,
+          xpReward: a.xpAwarded,
+        }))
         showAchievementPopup.value = true
       }
     }
@@ -141,7 +159,7 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
 </script>
 
 <template>
-  <div ref="containerRef" class="p-4 space-y-4">
+  <div ref="containerRef" class="p-4 pb-24 space-y-4">
     <SharedPullToRefreshIndicator
       :pull-distance="pullDistance"
       :is-refreshing="isRefreshing"
@@ -274,8 +292,8 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
 
       <GamificationAchievementPopup
         :show="showAchievementPopup"
-        :achievement="pendingAchievement"
-        @close="showAchievementPopup = false"
+        :achievement="currentAchievement"
+        @close="onAchievementClose"
       />
 
       <HabitsHomeTourOverlay
