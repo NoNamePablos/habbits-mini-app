@@ -14,6 +14,7 @@ import { CompleteHabitDto } from './dto/complete-habit.dto';
 import { GamificationService } from '../gamification/gamification.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { Achievement } from '../achievements/entities/achievement.entity';
+import { GoalsService, GoalCompletionResult } from '../goals/goals.service';
 
 const XP_PER_COMPLETION = 10;
 const MAX_STREAK_FREEZES = 3;
@@ -40,6 +41,7 @@ interface CompletionResult {
   freezeUsed: boolean;
   freezeEarned: boolean;
   streakFreezes: number;
+  goalCompleted: GoalCompletionResult | null;
 }
 
 @Injectable()
@@ -54,6 +56,7 @@ export class HabitsService {
     private readonly dataSource: DataSource,
     private readonly gamificationService: GamificationService,
     private readonly achievementsService: AchievementsService,
+    private readonly goalsService: GoalsService,
   ) {}
 
   async findAllByUser(userId: number): Promise<Habit[]> {
@@ -189,6 +192,10 @@ export class HabitsService {
         currentStreak: habit.currentStreak,
       });
 
+    // Check goals
+    const goalCompleted =
+      await this.goalsService.checkAfterCompletion(userId);
+
     return {
       completion,
       habit,
@@ -200,6 +207,7 @@ export class HabitsService {
       freezeUsed: streakData.freezeUsed,
       freezeEarned,
       streakFreezes: user.streakFreezes,
+      goalCompleted,
     };
   }
 

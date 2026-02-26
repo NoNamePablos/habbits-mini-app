@@ -20,6 +20,7 @@ import { BatchCreateHabitsDto } from './dto/batch-create-habits.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
 import { Achievement } from '../achievements/entities/achievement.entity';
+import { Goal } from '../goals/entities/goal.entity';
 
 interface HabitsListResponse {
   habits: Habit[];
@@ -31,6 +32,13 @@ interface UnlockedAchievementInfo {
   xpAwarded: number;
 }
 
+interface GoalCompletedInfo {
+  goal: Goal;
+  xpEarned: number;
+  leveledUp: boolean;
+  newLevel: number;
+}
+
 interface CompleteResponse {
   completion: HabitCompletion;
   habit: Habit;
@@ -39,6 +47,7 @@ interface CompleteResponse {
   leveledUp: boolean;
   newLevel: number;
   unlockedAchievements: UnlockedAchievementInfo[];
+  goalCompleted: GoalCompletedInfo | null;
 }
 
 @Controller('habits')

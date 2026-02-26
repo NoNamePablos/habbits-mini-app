@@ -48,3 +48,20 @@ export const CHALLENGE_VALIDATION = {
   minDuration: 1,
   maxDuration: 365,
 } as const
+
+// Goal defaults
+export const GOAL_VALIDATION = {
+  minTarget: 1,
+  maxTarget: 10000,
+  minDuration: 1,
+  maxDuration: 365,
+} as const
+
+export const GOAL_DURATION_PRESETS = [7, 14, 30, 60] as const
+
+export const GOAL_TARGET_PRESETS = {
+  completion_rate: [70, 80, 90],
+  streak_days: [7, 14, 30],
+  total_xp: [500, 1000, 2000],
+  total_completions: [30, 50, 100],
+} as const

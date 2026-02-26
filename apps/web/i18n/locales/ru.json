@@ -214,7 +214,10 @@
     "checkInChallenge": "Не удалось отметить день",
     "undoCheckIn": "Не удалось отменить отметку",
     "abandonChallenge": "Не удалось отменить челлендж",
-    "deleteAccount": "Не удалось удалить аккаунт"
+    "deleteAccount": "Не удалось удалить аккаунт",
+    "fetchGoal": "Не удалось загрузить цель",
+    "createGoal": "Не удалось создать цель",
+    "abandonGoal": "Не удалось отменить цель"
   },
   "success": {
     "title": "Готово",
@@ -226,7 +229,8 @@
     "challengeDeleted": "Челлендж удалён",
     "challengeCheckedIn": "День выполнен!",
     "habitsCreated": "Привычки созданы!",
-    "challengeAbandoned": "Челлендж отменён"
+    "challengeAbandoned": "Челлендж отменён",
+    "goalCreated": "Цель установлена!"
   },
   "dailyLogin": {
     "earned": "Ежедневный бонус: +{xp} XP!",
@@ -242,6 +246,41 @@
     "title": "{streak} дней подряд!",
     "message": "Отличная серия! Продолжай в том же духе",
     "button": "Круто!"
+  },
+  "goals": {
+    "setGoal": "Поставить цель",
+    "activeGoal": "Активная цель",
+    "daysLeft": "{count} дн. осталось",
+    "abandon": "Отменить",
+    "abandonConfirm": "Отменить цель?",
+    "completed": "Цель достигнута!",
+    "failed": "Цель не выполнена",
+    "xpReward": "+{xp} XP",
+    "button": "Отлично!",
+    "noActiveGoal": "Без цели легко сбиться с пути",
+    "type": {
+      "completion_rate": "Процент выполнения",
+      "streak_days": "Дни без пропусков",
+      "total_xp": "Набрать XP",
+      "total_completions": "Выполнений"
+    },
+    "typeDescription": {
+      "completion_rate": "Выполни {target}% привычек",
+      "streak_days": "{target} дней подряд без пропусков",
+      "total_xp": "Набери {target} очков опыта",
+      "total_completions": "Выполни привычки {target} раз"
+    },
+    "form": {
+      "title": "Новая цель",
+      "description": "Выбери тип цели и начни путь",
+      "selectType": "Тип цели",
+      "selectTarget": "Цель",
+      "selectDuration": "Срок",
+      "durationDays": "{count} дн.",
+      "submit": "Начать"
+    },
+    "history": "Цели",
+    "historyCount": "{count} выполнено"
   },
   "weeklySummary": {
     "title": "Итоги недели",

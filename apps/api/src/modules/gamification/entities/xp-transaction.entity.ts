@@ -14,7 +14,8 @@ export type XpSource =
   | 'streak_bonus'
   | 'achievement'
   | 'daily_login'
-  | 'challenge';
+  | 'challenge'
+  | 'goal';
 
 @Entity('xp_transactions')
 export class XpTransaction {
@@ -36,6 +37,7 @@ export class XpTransaction {
       'achievement',
       'daily_login',
       'challenge',
+      'goal',
     ],
   })
   source: XpSource;

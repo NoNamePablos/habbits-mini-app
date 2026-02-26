@@ -5,6 +5,7 @@ import { MAX_STREAK_FREEZES } from '~/constants'
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
+const goalsStore = useGoalsStore()
 
 const isLoading = ref<boolean>(true)
 
@@ -15,6 +16,7 @@ onMounted(async () => {
     gamificationStore.fetchAchievements(),
     statsStore.fetchSummary(),
     statsStore.fetchHeatmap(),
+    goalsStore.fetchHistory(),
   ])
   isLoading.value = false
 })
@@ -114,6 +116,20 @@ onMounted(async () => {
 
     <Card class="glass stagger-item" :style="{ '--stagger': 5 }">
       <CardContent class="pt-4 pb-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <Target class="h-4 w-4 text-primary" />
+            <span class="text-sm font-medium">{{ $t('goals.history') }}</span>
+          </div>
+          <Badge variant="secondary" class="text-xs">
+            {{ $t('goals.historyCount', { count: goalsStore.completedCount }) }}
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass stagger-item" :style="{ '--stagger': 6 }">
+      <CardContent class="pt-4 pb-4">
         <NuxtLink to="/achievements" class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Award class="h-4 w-4 text-yellow-500 icon-glow" />
@@ -129,7 +145,7 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card v-if="statsStore.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 6 }">
+    <Card v-if="statsStore.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 7 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Calendar class="h-3.5 w-3.5" />
@@ -139,7 +155,7 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0" class="glass stagger-item" :style="{ '--stagger': 7 }">
+    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0" class="glass stagger-item" :style="{ '--stagger': 8 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Trophy class="h-3.5 w-3.5" />

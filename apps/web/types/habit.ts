@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import type { GoalCompletionResult } from './goal'
 import { Sunrise, Sun, Moon, Clock } from 'lucide-vue-next'
 
 export const HABIT_FREQUENCIES = ['daily', 'weekly', 'custom'] as const
@@ -72,6 +73,7 @@ export interface CompleteResponse {
   freezeUsed: boolean
   freezeEarned: boolean
   streakFreezes: number
+  goalCompleted: GoalCompletionResult | null
 }
 
 export interface CreateHabitPayload {

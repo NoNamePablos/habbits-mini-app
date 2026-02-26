@@ -214,7 +214,10 @@
     "checkInChallenge": "Failed to check in",
     "undoCheckIn": "Failed to undo check-in",
     "abandonChallenge": "Failed to abandon challenge",
-    "deleteAccount": "Failed to delete account"
+    "deleteAccount": "Failed to delete account",
+    "fetchGoal": "Failed to load goal",
+    "createGoal": "Failed to create goal",
+    "abandonGoal": "Failed to cancel goal"
   },
   "success": {
     "title": "Done",
@@ -226,7 +229,8 @@
     "challengeDeleted": "Challenge deleted",
     "challengeCheckedIn": "Day complete!",
     "habitsCreated": "Habits created!",
-    "challengeAbandoned": "Challenge abandoned"
+    "challengeAbandoned": "Challenge abandoned",
+    "goalCreated": "Goal set!"
   },
   "dailyLogin": {
     "earned": "Daily bonus: +{xp} XP!",
@@ -242,6 +246,41 @@
     "title": "{streak} days in a row!",
     "message": "Amazing streak! Keep it going",
     "button": "Awesome!"
+  },
+  "goals": {
+    "setGoal": "Set a Goal",
+    "activeGoal": "Active Goal",
+    "daysLeft": "{count} d. left",
+    "abandon": "Cancel",
+    "abandonConfirm": "Cancel goal?",
+    "completed": "Goal Achieved!",
+    "failed": "Goal not reached",
+    "xpReward": "+{xp} XP",
+    "button": "Awesome!",
+    "noActiveGoal": "Set a goal to stay on track",
+    "type": {
+      "completion_rate": "Completion Rate",
+      "streak_days": "Perfect Day Streak",
+      "total_xp": "Earn XP",
+      "total_completions": "Completions"
+    },
+    "typeDescription": {
+      "completion_rate": "Complete {target}% of habits",
+      "streak_days": "{target} perfect days in a row",
+      "total_xp": "Earn {target} XP",
+      "total_completions": "Complete habits {target} times"
+    },
+    "form": {
+      "title": "New Goal",
+      "description": "Pick a goal type and start your journey",
+      "selectType": "Goal type",
+      "selectTarget": "Target",
+      "selectDuration": "Duration",
+      "durationDays": "{count} d.",
+      "submit": "Start"
+    },
+    "history": "Goals",
+    "historyCount": "{count} completed"
   },
   "weeklySummary": {
     "title": "Weekly Summary",
