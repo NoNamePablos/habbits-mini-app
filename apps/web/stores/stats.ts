@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { StatsSummary, HeatmapDay, HabitStats } from '~/types/stats'
+import type { StatsSummary, HeatmapDay, HabitStats, WeeklySummaryData } from '~/types/stats'
 import { DEFAULT_HEATMAP_MONTHS } from '~/constants'
 
 export const useStatsStore = defineStore('stats', () => {
@@ -28,6 +28,16 @@ export const useStatsStore = defineStore('stats', () => {
     }
   }
 
+  const weeklySummary = ref<WeeklySummaryData | null>(null)
+
+  const fetchWeeklySummary = async (): Promise<void> => {
+    try {
+      weeklySummary.value = await api.get<WeeklySummaryData>('/stats/weekly-summary')
+    } catch (error) {
+      handleError(error, 'errors.fetchSummary')
+    }
+  }
+
   const fetchHabitStats = async (habitId: number): Promise<HabitStats | null> => {
     try {
       return await api.get<HabitStats>(`/stats/habits/${habitId}`)
@@ -40,9 +50,11 @@ export const useStatsStore = defineStore('stats', () => {
   return {
     summary,
     heatmap,
+    weeklySummary,
     isLoading,
     fetchSummary,
     fetchHeatmap,
+    fetchWeeklySummary,
     fetchHabitStats,
   }
 })

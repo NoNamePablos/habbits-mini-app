@@ -10,6 +10,7 @@ import {
   StatsSummary,
   HeatmapDay,
   HabitStats,
+  WeeklySummaryData,
   StatsService,
 } from './stats.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
@@ -24,6 +25,13 @@ export class StatsController {
   @Get('summary')
   async getSummary(@TelegramUser() user: User): Promise<StatsSummary> {
     return this.statsService.getSummary(user.id);
+  }
+
+  @Get('weekly-summary')
+  async getWeeklySummary(
+    @TelegramUser() user: User,
+  ): Promise<WeeklySummaryData> {
+    return this.statsService.getWeeklySummary(user.id);
   }
 
   @Get('heatmap')

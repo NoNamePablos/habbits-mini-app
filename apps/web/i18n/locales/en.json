@@ -243,6 +243,14 @@
     "message": "Amazing streak! Keep it going",
     "button": "Awesome!"
   },
+  "weeklySummary": {
+    "title": "Weekly Summary",
+    "subtitle": "See what you achieved last week",
+    "completions": "Completed",
+    "perfectDays": "Perfect days",
+    "bestStreak": "Best streak",
+    "button": "Got it!"
+  },
   "info": {
     "title": "Info"
   },

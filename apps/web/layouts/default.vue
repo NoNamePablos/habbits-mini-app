@@ -4,12 +4,29 @@ import type { Component } from 'vue'
 
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
+const statsStore = useStatsStore()
 const route = useRoute()
 const { t } = useI18n()
+
+const lastMondayISO = ((): string => {
+  const now = new Date()
+  const day = now.getDay()
+  const offset = day === 0 ? -6 : 1 - day
+  const monday = new Date(now)
+  monday.setDate(now.getDate() + offset - 7)
+  return monday.toISOString().split('T')[0]
+})()
+
+const { hasSeenOnboarding: hasSeenWeeklySummary, markAsSeen: markWeeklySummarySeen } =
+  useOnboarding(`weeklySummary_${lastMondayISO}`)
 
 onMounted(async () => {
   await authStore.authenticate()
   await gamificationStore.fetchProfile()
+
+  if (new Date().getDay() === 1 && !toValue(hasSeenWeeklySummary)) {
+    await statsStore.fetchWeeklySummary()
+  }
 })
 
 interface NavTab {
@@ -38,8 +55,19 @@ const showUserHeader = computed<boolean>(() =>
 
 const showDailyBonus = computed<boolean>(() => authStore.dailyLoginXp !== null)
 
+const showWeeklySummary = computed<boolean>(() =>
+  !toValue(showDailyBonus)
+  && !toValue(hasSeenWeeklySummary)
+  && statsStore.weeklySummary !== null,
+)
+
 const onDailyBonusClose = (): void => {
   authStore.clearDailyBonus()
+}
+
+const onWeeklySummaryClose = (): void => {
+  markWeeklySummarySeen()
+  statsStore.weeklySummary = null
 }
 </script>
 
@@ -94,6 +122,13 @@ const onDailyBonusClose = (): void => {
       :xp="authStore.dailyLoginXp ?? 0"
       :week-login-days="authStore.weekLoginDays"
       @close="onDailyBonusClose"
+    />
+
+    <GamificationWeeklySummaryOverlay
+      v-if="statsStore.weeklySummary"
+      :show="showWeeklySummary"
+      :data="statsStore.weeklySummary"
+      @close="onWeeklySummaryClose"
     />
   </div>
 </template>

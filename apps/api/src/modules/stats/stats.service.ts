@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { HabitCompletion } from '../habits/entities/habit-completion.entity';
 import { Habit } from '../habits/entities/habit.entity';
+import { XpTransaction } from '../gamification/entities/xp-transaction.entity';
 
 export interface DaySummary {
   date: string;
@@ -31,6 +32,15 @@ export interface HabitStats {
   weeklyData: DaySummary[];
 }
 
+export interface WeeklySummaryData {
+  totalCompletions: number;
+  totalPossible: number;
+  perfectDays: number;
+  bestStreak: number;
+  xpEarned: number;
+  weeklyDays: DaySummary[];
+}
+
 @Injectable()
 export class StatsService {
   constructor(
@@ -38,6 +48,8 @@ export class StatsService {
     private readonly completionsRepo: Repository<HabitCompletion>,
     @InjectRepository(Habit)
     private readonly habitsRepo: Repository<Habit>,
+    @InjectRepository(XpTransaction)
+    private readonly xpTransRepo: Repository<XpTransaction>,
   ) {}
 
   async getSummary(userId: number): Promise<StatsSummary> {
@@ -100,6 +112,72 @@ export class StatsService {
       weeklyDays,
       currentActiveHabits: activeHabits.length,
       bestStreakOverall,
+    };
+  }
+
+  async getWeeklySummary(userId: number): Promise<WeeklySummaryData> {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const offsetToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+    const lastMonday = this.addDays(today, offsetToMonday - 7);
+    const lastSunday = this.addDays(today, offsetToMonday - 1);
+    const lastMondayStr = this.formatDate(lastMonday);
+    const lastSundayStr = this.formatDate(lastSunday);
+
+    const thisMondayDate = this.addDays(today, offsetToMonday);
+
+    const [activeHabits, completions, xpResult] = await Promise.all([
+      this.habitsRepo.find({ where: { userId, isActive: true } }),
+      this.completionsRepo.find({
+        where: {
+          userId,
+          completedDate: Between(lastMondayStr, lastSundayStr),
+        },
+        select: ['completedDate'],
+      }),
+      this.xpTransRepo
+        .createQueryBuilder('tx')
+        .select('COALESCE(SUM(tx.amount), 0)', 'total')
+        .where('tx.userId = :userId', { userId })
+        .andWhere('tx.createdAt >= :from', { from: lastMonday })
+        .andWhere('tx.createdAt < :to', { to: thisMondayDate })
+        .getRawOne<{ total: string }>(),
+    ]);
+
+    const totalHabits = activeHabits.length;
+    const bestStreak = activeHabits.reduce(
+      (max, h) => Math.max(max, h.bestStreak),
+      0,
+    );
+
+    const countByDate = new Map<string, number>();
+    for (const c of completions) {
+      countByDate.set(
+        c.completedDate,
+        (countByDate.get(c.completedDate) ?? 0) + 1,
+      );
+    }
+
+    const weeklyDays: DaySummary[] = [];
+    let perfectDays = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = this.formatDate(this.addDays(lastMonday, i));
+      const completed = countByDate.get(date) ?? 0;
+      weeklyDays.push({ date, completed, total: totalHabits });
+      if (totalHabits > 0 && completed >= totalHabits) {
+        perfectDays++;
+      }
+    }
+
+    return {
+      totalCompletions: completions.length,
+      totalPossible: totalHabits * 7,
+      perfectDays,
+      bestStreak,
+      xpEarned: parseInt(xpResult?.total ?? '0', 10),
+      weeklyDays,
     };
   }
 

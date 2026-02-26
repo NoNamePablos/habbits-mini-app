@@ -18,6 +18,15 @@ export interface HeatmapDay {
   level: 0 | 1 | 2 | 3 | 4
 }
 
+export interface WeeklySummaryData {
+  totalCompletions: number
+  totalPossible: number
+  perfectDays: number
+  bestStreak: number
+  xpEarned: number
+  weeklyDays: DaySummary[]
+}
+
 export interface HabitStats {
   totalCompletions: number
   weeklyCompletions: number
