@@ -71,29 +71,16 @@ const onCreateChallenge = async (data: CreateChallengePayload): Promise<void> =>
 
 <template>
   <div class="p-4 space-y-4">
-    <ChallengesChallengesPageSkeleton v-if="challengesStore.isLoading" />
+    <ChallengesPageSkeleton v-if="challengesStore.isLoading" />
 
     <template v-else>
       <div class="space-y-1 animate-fade-in-up">
         <h1 class="text-2xl font-bold tracking-wide">{{ $t('challenges.title') }}</h1>
-        <div class="flex items-center gap-3 text-xs text-muted-foreground">
-          <span>
-            <span class="font-semibold text-foreground">{{ challengesStore.activeChallenges.length }}</span>
-            {{ $t('challenges.statsActive') }}
-          </span>
-          <span class="text-foreground/20">·</span>
-          <span>
-            <span class="font-semibold text-foreground">
-              {{ challengesStore.challenges.filter(c => c.status === 'completed').length }}
-            </span>
-            {{ $t('challenges.statsCompleted') }}
-          </span>
-          <span class="text-foreground/20">·</span>
-          <span>
-            <span class="font-semibold text-foreground">{{ challengesStore.challenges.length }}</span>
-            {{ $t('challenges.statsTotal') }}
-          </span>
-        </div>
+        <ChallengesStatsBar
+          :active="challengesStore.activeChallenges.length"
+          :completed="challengesStore.challenges.filter(c => c.status === 'completed').length"
+          :total="challengesStore.challenges.length"
+        />
       </div>
 
       <template v-if="challengesStore.activeChallenges.length > 0 || challengesStore.historyChallenges.length > 0">

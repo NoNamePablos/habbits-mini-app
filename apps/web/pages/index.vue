@@ -76,10 +76,6 @@ const weekDays = computed<WeekDay[]>(() => {
 // Habit filter
 const habitFilter = ref<TimeOfDay | 'all'>('all')
 
-const onFilterChange = (v: string): void => {
-  habitFilter.value = v as TimeOfDay | 'all'
-}
-
 const filteredGroups = computed(() => {
   const groups = habitsStore.groupedByTimeOfDay
   if (toValue(habitFilter) === 'all') return groups
@@ -285,29 +281,11 @@ const onGoalCompletedClose = (): void => {
 
       <!-- Block 3: My Habits -->
       <div v-if="habitsStore.groupedByTimeOfDay.length > 0">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h2 class="text-base font-bold">{{ $t('home.myHabits') }}</h2>
-            <p class="text-[11px] text-muted-foreground">
-              {{ $t('home.habitsForToday', { count: filteredCount }) }}
-            </p>
-          </div>
-          <Select
-            :model-value="habitFilter"
-            @update:model-value="onFilterChange"
-          >
-            <SelectTrigger class="h-8 w-32 text-xs glass border-white/10">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{{ $t('home.filterAll') }}</SelectItem>
-              <SelectItem value="morning">{{ $t('timeOfDay.morning') }}</SelectItem>
-              <SelectItem value="afternoon">{{ $t('timeOfDay.afternoon') }}</SelectItem>
-              <SelectItem value="evening">{{ $t('timeOfDay.evening') }}</SelectItem>
-              <SelectItem value="anytime">{{ $t('timeOfDay.anytime') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <HomeHabitsSectionHeader
+          :count="filteredCount"
+          :filter="habitFilter"
+          @update:filter="habitFilter = $event"
+        />
 
         <HabitsHabitList
           v-if="filteredGroups.length > 0"

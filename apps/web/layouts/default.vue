@@ -92,8 +92,10 @@ const onWeeklySummaryClose = (): void => {
     </header>
 
     <main class="flex-1 overflow-y-auto">
-      <SharedUserHeader v-if="showUserHeader" />
-      <slot />
+      <div class="max-w-120 mx-auto w-full">
+        <SharedUserHeader v-if="showUserHeader" />
+        <slot />
+      </div>
     </main>
 
     <nav class="flex items-center justify-around glass-nav border-t border-white/10 dark:border-white/5 pb-safe">
