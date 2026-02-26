@@ -9,11 +9,18 @@ interface Props {
 defineProps<Props>()
 
 const { resolveIcon } = useHabitIcon()
+
+const getRarity = (xpReward: number): { label: string; colorClass: string } => {
+  if (xpReward > 200) return { label: '★★★', colorClass: 'text-amber-400' }
+  if (xpReward > 100) return { label: '★★', colorClass: 'text-purple-400' }
+  if (xpReward > 50)  return { label: '★', colorClass: 'text-blue-400' }
+  return { label: '·', colorClass: 'text-muted-foreground/50' }
+}
 </script>
 
 <template>
   <Card
-    class="transition-all"
+    class="transition-all relative"
     :class="achievement.unlocked ? 'glass' : 'glass opacity-50'"
   >
     <CardContent class="pt-4 pb-4 flex flex-col items-center text-center gap-2">
@@ -45,5 +52,12 @@ const { resolveIcon } = useHabitIcon()
         </div>
       </div>
     </CardContent>
+
+    <span
+      class="absolute top-2 right-2 text-[10px] font-bold leading-none"
+      :class="getRarity(achievement.xpReward).colorClass"
+    >
+      {{ getRarity(achievement.xpReward).label }}
+    </span>
   </Card>
 </template>

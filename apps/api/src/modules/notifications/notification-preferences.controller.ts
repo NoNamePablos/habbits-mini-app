@@ -2,8 +2,10 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   Body,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
@@ -32,5 +34,13 @@ export class NotificationPreferencesController {
     @Body() dto: UpdateNotificationPreferencesDto,
   ): Promise<NotificationPreference> {
     return this.notificationsService.updatePreferences(user.id, dto);
+  }
+
+  @Post('test')
+  @HttpCode(204)
+  async sendTestNotification(
+    @TelegramUser() user: User,
+  ): Promise<void> {
+    await this.notificationsService.sendTestNotification(user.id);
   }
 }

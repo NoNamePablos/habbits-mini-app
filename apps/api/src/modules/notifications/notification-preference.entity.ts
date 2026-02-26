@@ -23,4 +23,13 @@ export class NotificationPreference extends BaseEntity {
 
   @Column({ length: 5, default: '21:00' })
   eveningTime: string;
+
+  @Column({ default: false })
+  dndEnabled: boolean;
+
+  @Column({ length: 5, default: '23:00' })
+  dndStart: string;
+
+  @Column({ length: 5, default: '07:00' })
+  dndEnd: string;
 }

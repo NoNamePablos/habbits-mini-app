@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { CreateHabitPayload } from '~/types/habit'
+import { useStorage } from '@vueuse/core'
+import type { CreateHabitPayload, TimeOfDay } from '~/types/habit'
 import type { CreateGoalPayload, Goal } from '~/types/goal'
 import type { DaySummary } from '~/types/stats'
-import { Plus, Sparkles, Flame, Check } from 'lucide-vue-next'
+import { Plus, Sparkles } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
-import { useStorage } from '@vueuse/core'
 
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
@@ -34,10 +34,8 @@ const progressLabel = computed<string>(() => {
   return t('home.progressLabel.perfect')
 })
 
-interface WeekDay {
+interface WeekDay extends DaySummary {
   label: string
-  completed: number
-  total: number
   isToday: boolean
   isFuture: boolean
 }
@@ -67,14 +65,30 @@ const weekDays = computed<WeekDay[]>(() => {
     const date = new Date(d.date + 'T00:00:00')
     const dayIndex = date.getDay()
     return {
+      ...d,
       label: t(`days.${DAY_KEYS[dayIndex]}`),
-      completed: d.completed,
-      total: d.total,
       isToday: d.date === todayStr,
       isFuture: d.date > todayStr,
     }
   })
 })
+
+// Habit filter
+const habitFilter = ref<TimeOfDay | 'all'>('all')
+
+const onFilterChange = (v: string): void => {
+  habitFilter.value = v as TimeOfDay | 'all'
+}
+
+const filteredGroups = computed(() => {
+  const groups = habitsStore.groupedByTimeOfDay
+  if (toValue(habitFilter) === 'all') return groups
+  return groups.filter((g) => g.key === toValue(habitFilter))
+})
+
+const filteredCount = computed<number>(() =>
+  toValue(filteredGroups).reduce((sum: number, g) => sum + g.habits.length, 0),
+)
 
 const STREAK_MILESTONES = [7, 14, 30, 60, 100, 365] as const
 
@@ -109,13 +123,10 @@ const onAchievementClose = (): void => {
 // Onboarding tour
 const { hasSeenOnboarding: hasSeenHomeTour, markAsSeen: markHomeTourSeen } = useOnboarding('homeTour')
 const showHomeTour = ref<boolean>(false)
-const streakRef = ref<HTMLElement | null>(null)
-const weekCirclesRef = ref<HTMLElement | null>(null)
 const habitListRef = ref<InstanceType<typeof HTMLElement> | null>(null)
 const habitListEl = computed<HTMLElement | null>(() => {
   const r = toValue(habitListRef)
   if (!r) return null
-  // Component ref — access $el
   return (r as unknown as { $el?: HTMLElement }).$el ?? (r as HTMLElement)
 })
 
@@ -250,96 +261,69 @@ const onGoalCompletedClose = (): void => {
     <HabitsHomePageSkeleton v-if="habitsStore.isLoading && !isRefreshing" />
 
     <template v-else>
-      <Card class="glass overflow-hidden">
-        <CardContent class="pt-4 pb-4 space-y-4">
-          <!-- Streak -->
-          <div ref="streakRef" class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
-              <Flame class="h-5 w-5 text-orange-500" />
-            </div>
-            <div>
-              <div class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-                {{ $t('home.streak') }}
-              </div>
-              <div class="text-2xl font-black leading-tight">
-                {{ bestCurrentStreak }}
-                <span class="text-sm font-semibold text-muted-foreground">{{ $t('home.streakDays') }}</span>
-              </div>
-            </div>
-          </div>
+      <!-- Block 1: Today's Progress -->
+      <HomeTodayProgress
+        :completed="habitsStore.completedToday"
+        :total="habitsStore.totalToday"
+        :percent="habitsStore.progressPercent"
+        :streak="bestCurrentStreak"
+        :progress-label="progressLabel"
+      />
 
-          <!-- Week circles -->
-          <div v-if="weekDays.length > 0" ref="weekCirclesRef" class="flex items-center justify-between">
-            <div
-              v-for="(day, index) in weekDays"
-              :key="index"
-              class="flex flex-col items-center gap-1.5"
-            >
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center transition-all"
-                :class="[
-                  day.isFuture
-                    ? 'bg-secondary/30'
-                    : day.completed >= day.total && day.total > 0
-                      ? 'bg-green-500 text-white'
-                      : day.completed > 0
-                        ? 'bg-green-500/30 border-2 border-green-500'
-                        : 'bg-secondary/30',
-                  day.isToday ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : '',
-                ]"
-              >
-                <Check
-                  v-if="!day.isFuture && day.completed >= day.total && day.total > 0"
-                  class="h-4 w-4"
-                />
-              </div>
-              <span
-                class="text-[10px] font-medium"
-                :class="day.isToday ? 'text-primary' : 'text-muted-foreground'"
-              >
-                {{ day.label }}
-              </span>
-            </div>
-          </div>
+      <!-- Block 2: This Week -->
+      <HomeThisWeek
+        v-if="weekDays.length > 0"
+        :days="weekDays"
+      />
 
-          <!-- Daily progress -->
-          <div>
-            <div class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
-              {{ $t('home.dailyProgress') }}
-            </div>
-            <div class="flex items-baseline gap-1 mb-2">
-              <span class="text-2xl font-black leading-tight">
-                {{ habitsStore.completedToday }}</span><span class="text-sm text-muted-foreground">/{{ habitsStore.totalToday }}</span>
-              <span class="ml-auto text-sm font-semibold text-muted-foreground">
-                {{ habitsStore.progressPercent }}%
-              </span>
-            </div>
-            <div class="h-2 bg-foreground/10 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-gradient-primary rounded-full transition-all duration-500"
-                :style="{ width: `${habitsStore.progressPercent}%` }"
-              />
-            </div>
-            <p v-if="progressLabel" class="text-[11px] text-muted-foreground mt-1.5 text-right">
-              {{ progressLabel }}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
+      <!-- Goal card -->
       <GoalsGoalCard
         :active-goal="goalsStore.activeGoal"
         @create="showGoalForm = true"
         @abandon="onAbandonGoal"
       />
 
-      <HabitsHabitList
-        v-if="habitsStore.groupedByTimeOfDay.length > 0"
-        ref="habitListRef"
-        :groups="habitsStore.groupedByTimeOfDay"
-        @toggle="onToggle"
-        @click="onHabitClick"
-      />
+      <!-- Block 3: My Habits -->
+      <div v-if="habitsStore.groupedByTimeOfDay.length > 0">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-base font-bold">{{ $t('home.myHabits') }}</h2>
+            <p class="text-[11px] text-muted-foreground">
+              {{ $t('home.habitsForToday', { count: filteredCount }) }}
+            </p>
+          </div>
+          <Select
+            :model-value="habitFilter"
+            @update:model-value="onFilterChange"
+          >
+            <SelectTrigger class="h-8 w-32 text-xs glass border-white/10">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{{ $t('home.filterAll') }}</SelectItem>
+              <SelectItem value="morning">{{ $t('timeOfDay.morning') }}</SelectItem>
+              <SelectItem value="afternoon">{{ $t('timeOfDay.afternoon') }}</SelectItem>
+              <SelectItem value="evening">{{ $t('timeOfDay.evening') }}</SelectItem>
+              <SelectItem value="anytime">{{ $t('timeOfDay.anytime') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <HabitsHabitList
+          v-if="filteredGroups.length > 0"
+          ref="habitListRef"
+          :groups="filteredGroups"
+          @toggle="onToggle"
+          @click="onHabitClick"
+        />
+
+        <div
+          v-else
+          class="flex flex-col items-center justify-center py-8 text-center space-y-2"
+        >
+          <p class="text-sm text-muted-foreground">{{ $t('home.filterEmpty') }}</p>
+        </div>
+      </div>
 
       <div
         v-else
@@ -413,8 +397,8 @@ const onGoalCompletedClose = (): void => {
 
       <HabitsHomeTourOverlay
         :show="showHomeTour"
-        :streak-el="streakRef"
-        :week-el="weekCirclesRef"
+        :streak-el="null"
+        :week-el="null"
         :habit-list-el="habitListEl"
         @close="onHomeTourClose"
       />

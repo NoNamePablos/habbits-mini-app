@@ -30,7 +30,15 @@
       "title": "Perfect Day!",
       "subtitle": "All habits done. You're on fire!",
       "button": "Awesome!"
-    }
+    },
+    "todayProgress": "Today's Progress",
+    "habitsCompleted": "habits done",
+    "streakDaysCount": "{count}-day streak",
+    "thisWeek": "This Week",
+    "myHabits": "My Habits",
+    "habitsForToday": "{count} for today",
+    "filterAll": "All",
+    "filterEmpty": "No habits for this filter"
   },
   "profile": {
     "title": "Profile",
@@ -46,11 +54,34 @@
     "insights": "Insights",
     "insightBestDay": "Your most productive day is {day}",
     "insightBestStreak": "Best streak: {name} ({streak} days)",
-    "insightWeeklyRate": "You completed {pct}% of habits this week"
+    "insightWeeklyRate": "You completed {pct}% of habits this week",
+    "habitScore": "Habit Score",
+    "scoreElite": "Elite",
+    "scoreStrong": "Strong",
+    "scoreSolid": "Solid",
+    "scoreDeveloping": "Developing",
+    "scoreBeginner": "Beginner",
+    "personalRecords": "Personal Records",
+    "recordBestStreak": "Best streak habit",
+    "recordOverallStreak": "Overall streak record",
+    "recordWeekly": "Weekly record",
+    "topHabits": "Top Habits",
+    "needAttention": "Needs Work",
+    "noStreak": "No streak"
   },
   "achievements": {
     "title": "Achievements",
-    "emptyMessage": "Complete habits to unlock achievements"
+    "emptyMessage": "Complete habits to unlock achievements",
+    "sortDefault": "Default",
+    "sortClosest": "Closest",
+    "categoryAll": "All",
+    "category": {
+      "streak": "Streaks",
+      "completion": "Completions",
+      "social": "Social",
+      "time": "Time"
+    },
+    "categoryEmpty": "No achievements in this category"
   },
   "habit": {
     "back": "Back",
@@ -126,7 +157,10 @@
     "checkInShort": "Check in",
     "checkedShort": "Done",
     "cancel": "Cancel",
-    "recentDays": "Recent 14 days"
+    "recentDays": "Recent 14 days",
+    "statsActive": "active",
+    "statsCompleted": "completed",
+    "statsTotal": "total"
   },
   "challengeTemplate": {
     "noSugar": "No Sugar",
@@ -165,6 +199,11 @@
     "anytime": "Anytime",
     "now": "Now"
   },
+  "frequency": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "custom": "Custom"
+  },
   "days": {
     "sun": "Sun",
     "mon": "Mon",
@@ -200,7 +239,12 @@
     "deleteAccountTitle": "Delete account?",
     "deleteAccountDescription": "All data will be permanently deleted. This action cannot be undone.",
     "deleteAccountConfirm": "Delete",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dnd": "Do Not Disturb",
+    "dndStart": "From",
+    "dndEnd": "Until",
+    "testNotification": "Test Notification",
+    "exportData": "Export My Data"
   },
   "gamification": {
     "levelUp": "Level {level}!",
@@ -258,7 +302,8 @@
     "challengeCheckedIn": "Day complete!",
     "habitsCreated": "Habits created!",
     "challengeAbandoned": "Challenge abandoned",
-    "goalCreated": "Goal set!"
+    "goalCreated": "Goal set!",
+    "testNotificationSent": "Notification sent!"
   },
   "dailyLogin": {
     "earned": "Daily bonus: +{xp} XP!",
@@ -308,7 +353,9 @@
       "submit": "Start"
     },
     "history": "Goals",
-    "historyCount": "{count} completed"
+    "historyCount": "{count} completed",
+    "onTrack": "On Track",
+    "behind": "Behind"
   },
   "weeklySummary": {
     "title": "Weekly Summary",

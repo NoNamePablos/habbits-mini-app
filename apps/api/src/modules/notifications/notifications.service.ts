@@ -52,7 +52,7 @@ export class NotificationsService implements OnModuleInit {
 
   async updatePreferences(
     userId: number,
-    data: Partial<Pick<NotificationPreference, 'morningEnabled' | 'eveningEnabled' | 'morningTime' | 'eveningTime'>>,
+    data: Partial<Pick<NotificationPreference, 'morningEnabled' | 'eveningEnabled' | 'morningTime' | 'eveningTime' | 'dndEnabled' | 'dndStart' | 'dndEnd'>>,
   ): Promise<NotificationPreference> {
     let prefs = await this.preferencesRepo.findOne({ where: { userId } });
     if (!prefs) {
@@ -124,6 +124,19 @@ export class NotificationsService implements OnModuleInit {
       const diff = Math.abs(currentUtcMinutes - normalizedTarget);
       if (diff > 7 && diff < 1433) continue;
 
+      if (pref.dndEnabled) {
+        const offsetMinutes = this.getTimezoneOffsetMinutes(user.timezone);
+        const localNowMinutes = ((currentHour * 60 + currentMinute + offsetMinutes) % 1440 + 1440) % 1440;
+        const [dndStartH, dndStartM] = pref.dndStart.split(':').map(Number);
+        const [dndEndH, dndEndM] = pref.dndEnd.split(':').map(Number);
+        const dndStartMin = dndStartH * 60 + dndStartM;
+        const dndEndMin = dndEndH * 60 + dndEndM;
+        const inDnd = dndStartMin <= dndEndMin
+          ? localNowMinutes >= dndStartMin && localNowMinutes < dndEndMin
+          : localNowMinutes >= dndStartMin || localNowMinutes < dndEndMin;
+        if (inDnd) continue;
+      }
+
       const habits = await this.habitsRepo.find({
         where: { userId: user.id, isActive: true },
       });
@@ -150,6 +163,16 @@ export class NotificationsService implements OnModuleInit {
     }
 
     return results;
+  }
+
+  async sendTestNotification(userId: number): Promise<void> {
+    const user = await this.usersRepo.findOne({ where: { id: userId } });
+    if (!user) return;
+    const isRu = user.languageCode === 'ru';
+    const message = isRu
+      ? '🔔 Тестовое уведомление — всё работает!'
+      : '🔔 Test notification — everything works!';
+    await this.sendMessage(user.telegramId, message);
   }
 
   private buildMorningMessage(data: UserNotificationData): string {

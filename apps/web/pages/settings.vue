@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Globe, Info, Bell, Palette, Trash2, MessageCircle, Calendar } from 'lucide-vue-next'
+import { ArrowLeft, Globe, Info, Bell, Palette, Trash2, MessageCircle, Calendar, Download, MoonStar } from 'lucide-vue-next'
 import { Switch } from '~/components/ui/switch'
 
 type ThemePreference = 'auto' | 'light' | 'dark'
@@ -9,6 +9,9 @@ interface NotificationPreferences {
   eveningEnabled: boolean
   morningTime: string
   eveningTime: string
+  dndEnabled: boolean
+  dndStart: string
+  dndEnd: string
 }
 
 const router = useRouter()
@@ -76,8 +79,55 @@ const themeOptions: { value: ThemePreference; labelKey: string }[] = [
   { value: 'dark', labelKey: 'settings.themeDark' },
 ]
 
+const { showSuccess } = useErrorHandler()
+
 const onFeedback = (): void => {
   tg?.openLink(config.public.feedbackUrl as string)
+}
+
+const onDndToggle = (checked: boolean): void => {
+  updatePreference({ dndEnabled: checked })
+}
+
+const onDndStartChange = (event: Event): void => {
+  const target = event.target as HTMLInputElement
+  updatePreference({ dndStart: target.value })
+}
+
+const onDndEndChange = (event: Event): void => {
+  const target = event.target as HTMLInputElement
+  updatePreference({ dndEnd: target.value })
+}
+
+const isSendingTest = ref<boolean>(false)
+const onTestNotification = async (): Promise<void> => {
+  isSendingTest.value = true
+  try {
+    await api.post('/notifications/test')
+    showSuccess('success.testNotificationSent')
+  } finally {
+    isSendingTest.value = false
+  }
+}
+
+const habitsStore = useHabitsStore()
+const challengesStore = useChallengesStore()
+const gamificationStore = useGamificationStore()
+
+const onExportData = (): void => {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    habits: toValue(habitsStore.habits),
+    challenges: toValue(challengesStore.challenges),
+    achievements: toValue(gamificationStore.achievements),
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `habits-export-${new Date().toISOString().split('T')[0]}.json`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 const onDeleteAccount = async (): Promise<void> => {
@@ -202,7 +252,41 @@ const goBack = (): void => {
               />
             </div>
           </div>
+
+          <Separator />
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 flex-1">
+              <MoonStar class="h-4 w-4 text-muted-foreground" />
+              <span class="text-sm font-medium">{{ $t('settings.dnd') }}</span>
+            </div>
+            <Switch
+              :checked="notifPrefs.dndEnabled"
+              @update:checked="onDndToggle"
+            />
+          </div>
+          <div v-if="notifPrefs.dndEnabled" class="flex items-center gap-4 pl-6">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted-foreground">{{ $t('settings.dndStart') }}</span>
+              <input type="time" :value="notifPrefs.dndStart" class="time-input" @change="onDndStartChange" />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted-foreground">{{ $t('settings.dndEnd') }}</span>
+              <input type="time" :value="notifPrefs.dndEnd" class="time-input" @change="onDndEndChange" />
+            </div>
+          </div>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          class="w-full text-xs"
+          :disabled="isSendingTest"
+          @click="onTestNotification"
+        >
+          <Bell class="h-3.5 w-3.5 mr-2" />
+          {{ $t('settings.testNotification') }}
+        </Button>
       </CardContent>
     </Card>
 
@@ -211,6 +295,15 @@ const goBack = (): void => {
         <div class="flex items-center gap-3 cursor-pointer">
           <MessageCircle class="h-4 w-4 text-muted-foreground" />
           <span class="text-sm font-medium">{{ $t('settings.feedback') }}</span>
+        </div>
+      </CardContent>
+    </Card>
+
+    <Card class="glass" @click="onExportData">
+      <CardContent class="pt-4 pb-4">
+        <div class="flex items-center gap-3 cursor-pointer">
+          <Download class="h-4 w-4 text-muted-foreground" />
+          <span class="text-sm font-medium">{{ $t('settings.exportData') }}</span>
         </div>
       </CardContent>
     </Card>

@@ -30,7 +30,15 @@
       "title": "Идеальный день!",
       "subtitle": "Все привычки выполнены. Ты великолепен!",
       "button": "Отлично!"
-    }
+    },
+    "todayProgress": "Прогресс сегодня",
+    "habitsCompleted": "привычек выполнено",
+    "streakDaysCount": "{count} дн. стрик",
+    "thisWeek": "Эта неделя",
+    "myHabits": "Мои привычки",
+    "habitsForToday": "{count} на сегодня",
+    "filterAll": "Все",
+    "filterEmpty": "Нет привычек для этого фильтра"
   },
   "profile": {
     "title": "Профиль",
@@ -46,11 +54,34 @@
     "insights": "Инсайты",
     "insightBestDay": "Самый продуктивный день — {day}",
     "insightBestStreak": "Лучший стрик: {name} ({streak} дн.)",
-    "insightWeeklyRate": "На этой неделе выполнено {pct}% привычек"
+    "insightWeeklyRate": "На этой неделе выполнено {pct}% привычек",
+    "habitScore": "Индекс привычек",
+    "scoreElite": "Элита",
+    "scoreStrong": "Сильный",
+    "scoreSolid": "Уверенный",
+    "scoreDeveloping": "Развивающийся",
+    "scoreBeginner": "Новичок",
+    "personalRecords": "Личные рекорды",
+    "recordBestStreak": "Лучший стрик",
+    "recordOverallStreak": "Общий рекорд",
+    "recordWeekly": "Рекорд недели",
+    "topHabits": "В лидерах",
+    "needAttention": "Нужна работа",
+    "noStreak": "нет стрика"
   },
   "achievements": {
     "title": "Достижения",
-    "emptyMessage": "Выполняй привычки, чтобы открывать достижения"
+    "emptyMessage": "Выполняй привычки, чтобы открывать достижения",
+    "sortDefault": "По умолчанию",
+    "sortClosest": "Ближайшие",
+    "categoryAll": "Все",
+    "category": {
+      "streak": "Стрики",
+      "completion": "Выполнения",
+      "social": "Социальные",
+      "time": "Время"
+    },
+    "categoryEmpty": "Нет достижений в этой категории"
   },
   "habit": {
     "back": "Назад",
@@ -126,7 +157,10 @@
     "checkInShort": "Отметить",
     "checkedShort": "Сделано",
     "cancel": "Отмена",
-    "recentDays": "Последние 14 дней"
+    "recentDays": "Последние 14 дней",
+    "statsActive": "активных",
+    "statsCompleted": "пройдено",
+    "statsTotal": "всего"
   },
   "challengeTemplate": {
     "noSugar": "Без сахара",
@@ -165,6 +199,11 @@
     "anytime": "Любое время",
     "now": "Сейчас"
   },
+  "frequency": {
+    "daily": "Ежедневно",
+    "weekly": "Еженедельно",
+    "custom": "Своё"
+  },
   "days": {
     "sun": "Вс",
     "mon": "Пн",
@@ -200,7 +239,12 @@
     "deleteAccountTitle": "Удалить аккаунт?",
     "deleteAccountDescription": "Все данные будут удалены безвозвратно. Это действие нельзя отменить.",
     "deleteAccountConfirm": "Удалить",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "dnd": "Тихий час",
+    "dndStart": "С",
+    "dndEnd": "До",
+    "testNotification": "Тест уведомления",
+    "exportData": "Экспорт данных"
   },
   "gamification": {
     "levelUp": "Уровень {level}!",
@@ -258,7 +302,8 @@
     "challengeCheckedIn": "День выполнен!",
     "habitsCreated": "Привычки созданы!",
     "challengeAbandoned": "Челлендж отменён",
-    "goalCreated": "Цель установлена!"
+    "goalCreated": "Цель установлена!",
+    "testNotificationSent": "Уведомление отправлено!"
   },
   "dailyLogin": {
     "earned": "Ежедневный бонус: +{xp} XP!",
@@ -308,7 +353,9 @@
       "submit": "Начать"
     },
     "history": "Цели",
-    "historyCount": "{count} выполнено"
+    "historyCount": "{count} выполнено",
+    "onTrack": "В графике",
+    "behind": "Отстаёт"
   },
   "weeklySummary": {
     "title": "Итоги недели",

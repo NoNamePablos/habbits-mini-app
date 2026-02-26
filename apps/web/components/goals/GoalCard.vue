@@ -44,6 +44,17 @@ const getDaysLeft = (deadline: string): number => {
   return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
 }
 
+const getTrackStatus = (goal: import('~/types/goal').Goal, progressPercent: number): 'on-track' | 'behind' | null => {
+  const now = new Date()
+  const start = new Date(goal.startDate)
+  const end = new Date(goal.deadline)
+  const totalDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000))
+  const daysPassed = Math.ceil((now.getTime() - start.getTime()) / 86400000)
+  if (daysPassed <= 0) return null
+  const expectedProgress = Math.min(100, (daysPassed / totalDays) * 100)
+  return progressPercent >= expectedProgress - 10 ? 'on-track' : 'behind'
+}
+
 const formatValue = (type: GoalType, value: number): string => {
   if (type === 'completion_rate') return `${value}%`
   return String(value)
@@ -68,6 +79,16 @@ const formatValue = (type: GoalType, value: number): string => {
           <div class="flex items-center justify-between mb-0.5">
             <span class="text-xs font-semibold truncate">
               {{ $t(`goals.typeDescription.${activeGoal.goal.type}`, { target: activeGoal.goal.targetValue }) }}
+            </span>
+            <span
+              v-if="getTrackStatus(activeGoal.goal, activeGoal.progressPercent)"
+              class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ml-1"
+              :class="getTrackStatus(activeGoal.goal, activeGoal.progressPercent) === 'on-track'
+                ? 'bg-green-500/15 text-green-500'
+                : 'bg-amber-500/15 text-amber-500'"
+            >
+              {{ getTrackStatus(activeGoal.goal, activeGoal.progressPercent) === 'on-track'
+                ? $t('goals.onTrack') : $t('goals.behind') }}
             </span>
             <button
               class="text-muted-foreground hover:text-destructive transition-colors p-0.5 -mr-0.5 shrink-0"
