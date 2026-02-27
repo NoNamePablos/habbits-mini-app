@@ -251,7 +251,7 @@ const strugglingHabits = computed(() =>
             </div>
           </div>
           <div class="w-16 h-16">
-            <ChallengesChallengeProgress :percent="habitScore" :size="64" :stroke-width="6" color="var(--primary)">
+            <ChallengesChallengeProgress :percent="habitScore" :size="64" :stroke-width="6" color="hsl(var(--primary))">
               <span class="text-[10px] font-bold">{{ habitScore }}%</span>
             </ChallengesChallengeProgress>
           </div>
