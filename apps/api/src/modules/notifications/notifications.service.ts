@@ -104,33 +104,50 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   private async handleStartCommand(ctx: Context): Promise<void> {
     const isRu = ctx.from?.language_code === 'ru';
     const name = ctx.from?.first_name ?? (isRu ? 'друг' : 'there');
+    const webAppUrl = this.configService.get<string>('TELEGRAM_WEBAPP_URL');
 
     const welcome = isRu
       ? `👋 Привет, ${name}!\n\nЯ помогу тебе следить за привычками и челленджами прямо здесь — без открытия приложения.\n\nИспользуй кнопки ниже 👇`
       : `👋 Hey, ${name}!\n\nI'll help you track habits and challenges right here — no need to open the app.\n\nUse the buttons below 👇`;
 
     await ctx.reply(welcome, {
-      reply_markup: this.buildReplyKeyboard(isRu),
+      reply_markup: this.buildReplyKeyboard(isRu, webAppUrl),
       parse_mode: 'HTML',
     });
   }
 
-  private buildReplyKeyboard(isRu: boolean): {
-    keyboard: { text: string }[][];
+  private buildReplyKeyboard(
+    isRu: boolean,
+    webAppUrl?: string,
+  ): {
+    keyboard: (
+      | { text: string }
+      | { text: string; web_app: { url: string } }
+    )[][];
     resize_keyboard: boolean;
     persistent: boolean;
   } {
-    return {
-      keyboard: [
-        [
-          { text: isRu ? '📋 Сегодня' : '📋 Today' },
-          { text: isRu ? '🔥 Стрики' : '🔥 Streaks' },
-        ],
-        [{ text: isRu ? '📊 Статистика' : '📊 Stats' }],
+    const rows: (
+      | { text: string }
+      | { text: string; web_app: { url: string } }
+    )[][] = [
+      [
+        { text: isRu ? '📋 Сегодня' : '📋 Today' },
+        { text: isRu ? '🔥 Стрики' : '🔥 Streaks' },
       ],
-      resize_keyboard: true,
-      persistent: true,
-    };
+      [{ text: isRu ? '📊 Статистика' : '📊 Stats' }],
+    ];
+
+    if (webAppUrl) {
+      rows.push([
+        {
+          text: isRu ? '📱 Открыть приложение' : '📱 Open app',
+          web_app: { url: webAppUrl },
+        },
+      ]);
+    }
+
+    return { keyboard: rows, resize_keyboard: true, persistent: true };
   }
 
   private async handleTodayCommand(ctx: Context): Promise<void> {
