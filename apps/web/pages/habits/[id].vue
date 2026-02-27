@@ -18,6 +18,8 @@ const habitStats = ref<HabitStats | null>(null)
 const isLoading = ref<boolean>(true)
 const showEditForm = ref<boolean>(false)
 const showDeleteConfirm = ref<boolean>(false)
+const showNoteSheet = ref<boolean>(false)
+const noteText = ref<string>('')
 
 const habitId = computed<number>(() => Number(route.params.id))
 
@@ -42,17 +44,21 @@ const fetchStats = async (): Promise<void> => {
 }
 
 const onToggle = async (): Promise<void> => {
-  const id = toValue(habitId)
-  const today = new Date().toISOString().split('T')[0]
-
   if (toValue(isCompleted)) {
     hapticImpact('light')
-    await habitsStore.uncompleteHabit(id, today)
+    const today = new Date().toISOString().split('T')[0]
+    await habitsStore.uncompleteHabit(toValue(habitId), today)
+    await Promise.all([fetchHabit(), fetchStats()])
   } else {
-    hapticNotification('success')
-    await habitsStore.completeHabit(id)
+    noteText.value = ''
+    showNoteSheet.value = true
   }
+}
 
+const onCompleteWithNote = async (note: string): Promise<void> => {
+  showNoteSheet.value = false
+  hapticNotification('success')
+  await habitsStore.completeHabit(toValue(habitId), note || undefined)
   await Promise.all([fetchHabit(), fetchStats()])
 }
 
@@ -74,7 +80,7 @@ const onDelete = async (): Promise<void> => {
   }
 }
 
-watch(isCompleted, (completed) => {
+watch(isCompleted, (completed: boolean) => {
   if (completed) {
     hideMainButton()
   } else {
@@ -250,5 +256,29 @@ onUnmounted(() => {
         @submit="onEdit"
       />
     </template>
+
+    <Sheet :open="showNoteSheet" @update:open="showNoteSheet = $event">
+      <SheetContent side="bottom" class="rounded-t-2xl glass-heavy">
+        <SheetTitle class="text-base">{{ $t('habit.noteTitle') }}</SheetTitle>
+        <SheetDescription class="sr-only">{{ $t('habit.noteTitle') }}</SheetDescription>
+        <div class="mt-4 space-y-3">
+          <textarea
+            v-model="noteText"
+            :placeholder="$t('habit.notePlaceholder')"
+            :maxlength="500"
+            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none h-24"
+          />
+          <div class="flex gap-2">
+            <Button variant="outline" class="flex-1" @click="onCompleteWithNote('')">
+              {{ $t('habit.noteSkip') }}
+            </Button>
+            <Button class="flex-1 bg-gradient-primary border-0 text-white hover:opacity-90" @click="onCompleteWithNote(noteText)">
+              <Check class="h-4 w-4 mr-1" />
+              {{ $t('habit.noteSubmit') }}
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 </template>

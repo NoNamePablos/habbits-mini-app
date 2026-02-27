@@ -105,7 +105,11 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "uncompleted": "Unmarked",
-    "undo": "Undo"
+    "undo": "Undo",
+    "noteTitle": "How did it go?",
+    "notePlaceholder": "Add a note (optional)",
+    "noteSkip": "Skip",
+    "noteSubmit": "Mark done"
   },
   "habitForm": {
     "createTitle": "New habit",

@@ -105,7 +105,11 @@
     "cancel": "Отмена",
     "delete": "Удалить",
     "uncompleted": "Отметка снята",
-    "undo": "Отменить"
+    "undo": "Отменить",
+    "noteTitle": "Как прошло?",
+    "notePlaceholder": "Добавь заметку (необязательно)",
+    "noteSkip": "Пропустить",
+    "noteSubmit": "Отметить"
   },
   "habitForm": {
     "createTitle": "Новая привычка",

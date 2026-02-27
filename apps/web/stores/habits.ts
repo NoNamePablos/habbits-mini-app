@@ -62,7 +62,7 @@ export const useHabitsStore = defineStore('habits', () => {
     }
   }
 
-  const completeHabit = async (habitId: number): Promise<CompleteResponse | null> => {
+  const completeHabit = async (habitId: number, note?: string): Promise<CompleteResponse | null> => {
     const today = new Date().toISOString().split('T')[0]
     const fakeCompletion: HabitCompletion = {
       id: -Date.now(),
@@ -71,7 +71,7 @@ export const useHabitsStore = defineStore('habits', () => {
       completedDate: today,
       value: null,
       xpEarned: 0,
-      note: null,
+      note: note ?? null,
       createdAt: new Date().toISOString(),
     }
 
@@ -81,7 +81,8 @@ export const useHabitsStore = defineStore('habits', () => {
     todayCompletions.value = [...previousCompletions, fakeCompletion]
 
     try {
-      const result = await api.post<CompleteResponse>(`/habits/${habitId}/complete`)
+      const body = note ? { note } : {}
+      const result = await api.post<CompleteResponse>(`/habits/${habitId}/complete`, body)
 
       todayCompletions.value = toValue(todayCompletions).map((c) =>
         c.id === fakeCompletion.id ? result.completion : c,
