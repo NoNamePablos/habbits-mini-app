@@ -57,6 +57,20 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
         { command: 'help', description: 'Список команд' },
       ])
       .catch(() => undefined);
+
+    const webAppUrl = this.configService.get<string>('TELEGRAM_WEBAPP_URL');
+    if (webAppUrl) {
+      this.bot.telegram
+        .setChatMenuButton({
+          menuButton: {
+            type: 'web_app',
+            text: '📱 Открыть',
+            web_app: { url: webAppUrl },
+          },
+        })
+        .catch(() => undefined);
+    }
+
     this.bot.launch().catch((err: unknown) => {
       this.logger.error('Bot polling failed', err);
     });
@@ -70,14 +84,53 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   // ─── Bot command: /today ──────────────────────────────────────────────────
 
   private setupBotHandlers(): void {
+    this.bot.command('start', (ctx) => this.handleStartCommand(ctx));
     this.bot.command('today', (ctx) => this.handleTodayCommand(ctx));
     this.bot.command('streak', (ctx) => this.handleStreakCommand(ctx));
     this.bot.command('stats', (ctx) => this.handleStatsCommand(ctx));
     this.bot.command('help', (ctx) => this.handleHelpCommand(ctx));
+    // Reply keyboard button handlers (match by leading emoji, language-agnostic)
+    this.bot.hears(/^📋/, (ctx) => this.handleTodayCommand(ctx));
+    this.bot.hears(/^🔥/, (ctx) => this.handleStreakCommand(ctx));
+    this.bot.hears(/^📊/, (ctx) => this.handleStatsCommand(ctx));
     this.bot.action(/^h:(\d+)$/, (ctx) => this.handleCompleteCallback(ctx));
     this.bot.action(/^c:(\d+)$/, (ctx) =>
       this.handleChallengeCheckInCallback(ctx),
     );
+  }
+
+  // ─── Bot command: /start ─────────────────────────────────────────────────
+
+  private async handleStartCommand(ctx: Context): Promise<void> {
+    const isRu = ctx.from?.language_code === 'ru';
+    const name = ctx.from?.first_name ?? (isRu ? 'друг' : 'there');
+
+    const welcome = isRu
+      ? `👋 Привет, ${name}!\n\nЯ помогу тебе следить за привычками и челленджами прямо здесь — без открытия приложения.\n\nИспользуй кнопки ниже 👇`
+      : `👋 Hey, ${name}!\n\nI'll help you track habits and challenges right here — no need to open the app.\n\nUse the buttons below 👇`;
+
+    await ctx.reply(welcome, {
+      reply_markup: this.buildReplyKeyboard(isRu),
+      parse_mode: 'HTML',
+    });
+  }
+
+  private buildReplyKeyboard(isRu: boolean): {
+    keyboard: { text: string }[][];
+    resize_keyboard: boolean;
+    persistent: boolean;
+  } {
+    return {
+      keyboard: [
+        [
+          { text: isRu ? '📋 Сегодня' : '📋 Today' },
+          { text: isRu ? '🔥 Стрики' : '🔥 Streaks' },
+        ],
+        [{ text: isRu ? '📊 Статистика' : '📊 Stats' }],
+      ],
+      resize_keyboard: true,
+      persistent: true,
+    };
   }
 
   private async handleTodayCommand(ctx: Context): Promise<void> {
