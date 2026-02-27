@@ -36,9 +36,17 @@ export const useHabitsStore = defineStore('habits', () => {
   const groupedByTimeOfDay = computed<HabitGroup[]>(() => {
     const order: TimeOfDay[] = ['morning', 'afternoon', 'evening', 'anytime']
     const groups: HabitGroup[] = []
+    const done = toValue(completedIds)
 
     for (const key of order) {
-      const filtered = toValue(habits).filter((h) => h.timeOfDay === key)
+      const filtered = toValue(habits)
+        .filter((h) => h.timeOfDay === key)
+        .sort((a, b) => {
+          const aDone = done.has(a.id) ? 1 : 0
+          const bDone = done.has(b.id) ? 1 : 0
+          if (aDone !== bDone) return aDone - bDone
+          return b.currentStreak - a.currentStreak
+        })
       if (filtered.length > 0) {
         groups.push({ key, habits: filtered })
       }

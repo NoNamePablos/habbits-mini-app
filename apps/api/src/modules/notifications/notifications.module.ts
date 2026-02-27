@@ -8,6 +8,7 @@ import { User } from '../users/entities/user.entity';
 import { Habit } from '../habits/entities/habit.entity';
 import { HabitCompletion } from '../habits/entities/habit-completion.entity';
 import { UsersModule } from '../users/users.module';
+import { HabitsModule } from '../habits/habits.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from '../users/users.module';
       HabitCompletion,
     ]),
     UsersModule,
+    HabitsModule,
   ],
   controllers: [NotificationPreferencesController],
   providers: [NotificationsService, NotificationsScheduler],

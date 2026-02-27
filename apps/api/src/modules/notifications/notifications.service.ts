@@ -1,12 +1,13 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Telegraf } from 'telegraf';
+import { Telegraf, Context } from 'telegraf';
 import { NotificationPreference } from './notification-preference.entity';
 import { User } from '../users/entities/user.entity';
 import { Habit } from '../habits/entities/habit.entity';
 import { HabitCompletion } from '../habits/entities/habit-completion.entity';
+import { HabitsService } from '../habits/habits.service';
 
 interface UserNotificationData {
   telegramId: number;
@@ -18,7 +19,7 @@ interface UserNotificationData {
 }
 
 @Injectable()
-export class NotificationsService implements OnModuleInit {
+export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationsService.name);
   private bot: Telegraf;
 
@@ -32,13 +33,126 @@ export class NotificationsService implements OnModuleInit {
     private readonly habitsRepo: Repository<Habit>,
     @InjectRepository(HabitCompletion)
     private readonly completionsRepo: Repository<HabitCompletion>,
+    private readonly habitsService: HabitsService,
   ) {
     const token = this.configService.getOrThrow<string>('TELEGRAM_BOT_TOKEN');
     this.bot = new Telegraf(token);
   }
 
   onModuleInit(): void {
-    this.logger.log('Notifications service initialized');
+    this.setupBotHandlers();
+    this.bot.launch().catch((err: unknown) => {
+      this.logger.error('Bot polling failed', err);
+    });
+    this.logger.log('Bot started (long polling)');
+  }
+
+  onModuleDestroy(): void {
+    this.bot.stop('shutdown');
+  }
+
+  // ─── Bot command: /today ──────────────────────────────────────────────────
+
+  private setupBotHandlers(): void {
+    this.bot.command('today', (ctx) => this.handleTodayCommand(ctx));
+    this.bot.action(/^h:(\d+)$/, (ctx) => this.handleCompleteCallback(ctx));
+  }
+
+  private async handleTodayCommand(ctx: Context): Promise<void> {
+    const telegramId = ctx.from?.id;
+    if (!telegramId) return;
+
+    const user = await this.usersRepo.findOne({ where: { telegramId } });
+    if (!user) {
+      await ctx.reply(
+        user === null ? '❌ Аккаунт не найден. Открой приложение для регистрации.' : '',
+      );
+      return;
+    }
+
+    const { text, keyboard } = await this.buildTodayPayload(user);
+    await ctx.reply(text, { reply_markup: { inline_keyboard: keyboard }, parse_mode: 'HTML' });
+  }
+
+  private async handleCompleteCallback(ctx: Context): Promise<void> {
+    const telegramId = ctx.from?.id;
+    if (!telegramId || !('match' in ctx) || !ctx.match) return;
+
+    const habitId = parseInt((ctx.match as RegExpMatchArray)[1], 10);
+    const user = await this.usersRepo.findOne({ where: { telegramId } });
+    if (!user) {
+      await ctx.answerCbQuery('❌ Аккаунт не найден');
+      return;
+    }
+
+    const isRu = user.languageCode === 'ru';
+
+    try {
+      const result = await this.habitsService.complete(habitId, user.id, {}, user.timezone ?? 'UTC');
+      const streakMsg = result.habit.currentStreak > 1
+        ? ` 🔥${result.habit.currentStreak}`
+        : '';
+      const xpMsg = `+${result.xpEarned + result.streakBonusXp} XP`;
+      await ctx.answerCbQuery(`✅ ${result.habit.name}${streakMsg} ${xpMsg}`);
+
+      const { text, keyboard } = await this.buildTodayPayload(user);
+      await ctx.editMessageText(text, {
+        reply_markup: { inline_keyboard: keyboard },
+        parse_mode: 'HTML',
+      });
+    } catch {
+      await ctx.answerCbQuery(isRu ? '✅ Уже выполнено!' : '✅ Already done!');
+    }
+  }
+
+  private async buildTodayPayload(
+    user: User,
+  ): Promise<{ text: string; keyboard: { text: string; callback_data: string }[][] }> {
+    const isRu = user.languageCode === 'ru';
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: user.timezone ?? 'UTC' }).format(new Date());
+
+    const habits = await this.habitsRepo.find({
+      where: { userId: user.id, isActive: true },
+      order: { sortOrder: 'ASC', createdAt: 'ASC' },
+    });
+
+    const completions = await this.completionsRepo.find({
+      where: { userId: user.id, completedDate: today },
+    });
+    const completedIds = new Set(completions.map((c) => c.habitId));
+
+    const completedCount = completedIds.size;
+    const total = habits.length;
+
+    const header = isRu
+      ? `📋 <b>Привычки на сегодня</b> (${completedCount}/${total})`
+      : `📋 <b>Today's habits</b> (${completedCount}/${total})`;
+
+    const lines = habits.map((h) => {
+      const done = completedIds.has(h.id);
+      const streak = h.currentStreak > 0 ? ` 🔥${h.currentStreak}` : '';
+      return done ? `✅ ${h.name}${streak}` : `⬜ ${h.name}${streak}`;
+    });
+
+    const text = [header, '', ...lines].join('\n');
+
+    // Inline keyboard: 2 buttons per row, only incomplete habits
+    const incomplete = habits.filter((h) => !completedIds.has(h.id));
+    const keyboard: { text: string; callback_data: string }[][] = [];
+    for (let i = 0; i < incomplete.length; i += 2) {
+      const row = incomplete.slice(i, i + 2).map((h) => ({
+        text: `☑️ ${h.name}`,
+        callback_data: `h:${h.id}`,
+      }));
+      keyboard.push(row);
+    }
+
+    if (incomplete.length === 0) {
+      const done = isRu ? '\n\n🎉 <b>Все выполнено! Отличный день!</b>' : '\n\n🎉 <b>All done! Great job!</b>';
+      return { text: text + done, keyboard: [] };
+    }
+
+    return { text, keyboard };
   }
 
   async getPreferences(userId: number): Promise<NotificationPreference> {
@@ -65,10 +179,15 @@ export class NotificationsService implements OnModuleInit {
 
   async sendMorningReminders(): Promise<void> {
     const users = await this.getUsersForTimeSlot('morning');
+    const botUsername = this.configService.get<string>('TELEGRAM_BOT_USERNAME', 'mybot');
 
     for (const userData of users) {
       const message = this.buildMorningMessage(userData);
-      await this.sendMessage(userData.telegramId, message);
+      const keyboard = [[{
+        text: userData.languageCode === 'ru' ? '📋 Открыть привычки' : '📋 Open habits',
+        url: `https://t.me/${botUsername}`,
+      }]];
+      await this.sendMessageWithKeyboard(userData.telegramId, message, keyboard);
     }
 
     if (users.length > 0) {
@@ -78,12 +197,17 @@ export class NotificationsService implements OnModuleInit {
 
   async sendEveningReminders(): Promise<void> {
     const users = await this.getUsersForTimeSlot('evening');
+    const botUsername = this.configService.get<string>('TELEGRAM_BOT_USERNAME', 'mybot');
 
     for (const userData of users) {
       if (userData.completedToday >= userData.totalHabits) continue;
 
       const message = this.buildEveningMessage(userData);
-      await this.sendMessage(userData.telegramId, message);
+      const keyboard = [[{
+        text: userData.languageCode === 'ru' ? '📋 Открыть привычки' : '📋 Open habits',
+        url: `https://t.me/${botUsername}`,
+      }]];
+      await this.sendMessageWithKeyboard(userData.telegramId, message, keyboard);
     }
 
     if (users.length > 0) {
@@ -209,6 +333,24 @@ export class NotificationsService implements OnModuleInit {
   ): Promise<void> {
     try {
       await this.bot.telegram.sendMessage(telegramId, text);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(
+        `Failed to send message to ${telegramId}: ${message}`,
+      );
+    }
+  }
+
+  private async sendMessageWithKeyboard(
+    telegramId: number,
+    text: string,
+    inlineKeyboard: { text: string; url?: string; callback_data?: string }[][],
+  ): Promise<void> {
+    try {
+      await this.bot.telegram.sendMessage(telegramId, text, {
+        reply_markup: { inline_keyboard: inlineKeyboard },
+      });
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Unknown error';
