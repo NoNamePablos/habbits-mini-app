@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Zap } from 'lucide-vue-next'
+import { Zap, Snowflake } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
@@ -32,6 +32,14 @@ const xpRemaining = computed<number>(() =>
               <span class="text-[10px] text-muted-foreground">
                 {{ xpRemaining }} {{ $t('userHeader.xpLeft') }}
               </span>
+              <Badge
+                v-if="gamificationStore.streakFreezes > 0"
+                variant="secondary"
+                class="text-[10px] gap-0.5 px-1.5 py-0 text-sky-400"
+              >
+                <Snowflake class="h-2.5 w-2.5" />
+                {{ gamificationStore.streakFreezes }}
+              </Badge>
             </div>
           </div>
         </div>

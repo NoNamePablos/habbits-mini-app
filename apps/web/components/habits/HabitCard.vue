@@ -46,6 +46,13 @@ const onClick = (): void => {
 
 const frequencyLabel = computed<string>(() => t(`frequency.${props.habit.frequency}`))
 const timeLabel = computed<string>(() => t(`timeOfDay.${props.habit.timeOfDay}`))
+
+const streakBadgeStyle = computed<{ bg: string; color: string; glow: boolean }>(() => {
+  const s = props.habit.currentStreak
+  if (s >= 30) return { bg: 'rgba(234,179,8,0.18)', color: '#eab308', glow: true }
+  if (s >= 7)  return { bg: 'rgba(239,68,68,0.18)',  color: '#ef4444', glow: false }
+  return              { bg: 'rgba(249,115,22,0.18)', color: '#f97316', glow: false }
+})
 </script>
 
 <template>
@@ -79,9 +86,10 @@ const timeLabel = computed<string>(() => t(`timeOfDay.${props.habit.timeOfDay}`)
           ⏰ {{ timeLabel }}
         </span>
         <span
-          v-if="habit.currentStreak > 0"
+          v-if="habit.currentStreak > 2"
           class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
-          :style="{ backgroundColor: `${habitColor}20`, color: habitColor }"
+          :class="{ 'streak-gold-glow': streakBadgeStyle.glow }"
+          :style="{ backgroundColor: streakBadgeStyle.bg, color: streakBadgeStyle.color }"
         >
           <Flame class="h-2.5 w-2.5 inline -mt-px" /> {{ habit.currentStreak }}
         </span>
@@ -125,5 +133,9 @@ const timeLabel = computed<string>(() => t(`timeOfDay.${props.habit.timeOfDay}`)
 
 .animate-row-flash {
   animation: row-flash 0.5s ease-out;
+}
+
+.streak-gold-glow {
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.5);
 }
 </style>
