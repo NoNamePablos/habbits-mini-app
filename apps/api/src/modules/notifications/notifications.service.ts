@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf, Context, Markup } from 'telegraf';
 import { NotificationPreference } from './notification-preference.entity';
 import { User } from '../users/entities/user.entity';
 import { Habit } from '../habits/entities/habit.entity';
@@ -111,26 +111,17 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       : `👋 Hey, ${name}!\n\nI'll help you track habits and challenges right here — no need to open the app.\n\nUse the buttons below 👇`;
 
     await ctx.reply(welcome, {
-      reply_markup: this.buildReplyKeyboard(isRu, webAppUrl),
+      ...this.buildReplyKeyboard(isRu, webAppUrl),
       parse_mode: 'HTML',
     });
   }
 
-  private buildReplyKeyboard(
-    isRu: boolean,
-    webAppUrl?: string,
-  ): {
-    keyboard: (
+  private buildReplyKeyboard(isRu: boolean, webAppUrl?: string) {
+    type KBtn =
       | { text: string }
-      | { text: string; web_app: { url: string } }
-    )[][];
-    resize_keyboard: boolean;
-    persistent: boolean;
-  } {
-    const rows: (
-      | { text: string }
-      | { text: string; web_app: { url: string } }
-    )[][] = [
+      | { text: string; web_app: { url: string } };
+
+    const rows: KBtn[][] = [
       [
         { text: isRu ? '📋 Сегодня' : '📋 Today' },
         { text: isRu ? '🔥 Стрики' : '🔥 Streaks' },
@@ -147,7 +138,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
       ]);
     }
 
-    return { keyboard: rows, resize_keyboard: true, persistent: true };
+    return Markup.keyboard(rows).resize().persistent();
   }
 
   private async handleTodayCommand(ctx: Context): Promise<void> {
