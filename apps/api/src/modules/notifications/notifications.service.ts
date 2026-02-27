@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { Telegraf, Context } from 'telegraf';
 import { NotificationPreference } from './notification-preference.entity';
 import { User } from '../users/entities/user.entity';
@@ -49,6 +49,14 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit(): void {
     this.setupBotHandlers();
+    this.bot.telegram
+      .setMyCommands([
+        { command: 'today', description: 'Привычки и челленджи на сегодня' },
+        { command: 'streak', description: 'Текущие стрики' },
+        { command: 'stats', description: 'Статистика за неделю' },
+        { command: 'help', description: 'Список команд' },
+      ])
+      .catch(() => undefined);
     this.bot.launch().catch((err: unknown) => {
       this.logger.error('Bot polling failed', err);
     });
@@ -63,6 +71,9 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
 
   private setupBotHandlers(): void {
     this.bot.command('today', (ctx) => this.handleTodayCommand(ctx));
+    this.bot.command('streak', (ctx) => this.handleStreakCommand(ctx));
+    this.bot.command('stats', (ctx) => this.handleStatsCommand(ctx));
+    this.bot.command('help', (ctx) => this.handleHelpCommand(ctx));
     this.bot.action(/^h:(\d+)$/, (ctx) => this.handleCompleteCallback(ctx));
     this.bot.action(/^c:(\d+)$/, (ctx) =>
       this.handleChallengeCheckInCallback(ctx),
@@ -164,6 +175,183 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
     } catch {
       await ctx.answerCbQuery(isRu ? '✅ Уже выполнено!' : '✅ Already done!');
     }
+  }
+
+  // ─── Bot command: /streak ─────────────────────────────────────────────────
+
+  private async handleStreakCommand(ctx: Context): Promise<void> {
+    const telegramId = ctx.from?.id;
+    if (!telegramId) return;
+
+    const user = await this.usersRepo.findOne({ where: { telegramId } });
+    if (!user) {
+      await ctx.reply(
+        '❌ Аккаунт не найден. Открой приложение для регистрации.',
+      );
+      return;
+    }
+
+    const isRu = user.languageCode === 'ru';
+
+    const habits = await this.habitsRepo.find({
+      where: { userId: user.id, isActive: true },
+      order: { currentStreak: 'DESC' },
+    });
+
+    const withStreak = habits.filter((h) => h.currentStreak > 0);
+
+    const allChallenges = await this.challengesService.findAllByUser(
+      user.id,
+      user.timezone ?? 'UTC',
+    );
+    const challengesWithStreak = allChallenges
+      .filter((c) => c.status === ChallengeStatus.ACTIVE && c.currentStreak > 0)
+      .sort((a, b) => b.currentStreak - a.currentStreak);
+
+    if (withStreak.length === 0 && challengesWithStreak.length === 0) {
+      await ctx.reply(
+        isRu
+          ? '📭 Пока нет активных стриков. Начни сегодня!'
+          : '📭 No active streaks yet. Start today!',
+        { parse_mode: 'HTML' },
+      );
+      return;
+    }
+
+    const lines: string[] = [
+      isRu ? '🔥 <b>Текущие стрики</b>' : '🔥 <b>Current streaks</b>',
+      '',
+    ];
+
+    if (withStreak.length > 0) {
+      lines.push(isRu ? '<b>Привычки:</b>' : '<b>Habits:</b>');
+      for (const h of withStreak) {
+        lines.push(
+          `  🔥 ${h.name} — ${h.currentStreak} ${isRu ? 'дн.' : 'd.'}`,
+        );
+      }
+    }
+
+    if (challengesWithStreak.length > 0) {
+      if (withStreak.length > 0) lines.push('');
+      lines.push(isRu ? '<b>Челленджи:</b>' : '<b>Challenges:</b>');
+      for (const c of challengesWithStreak) {
+        lines.push(
+          `  🏆 ${c.title} — ${c.currentStreak} ${isRu ? 'дн.' : 'd.'}`,
+        );
+      }
+    }
+
+    await ctx.reply(lines.join('\n'), { parse_mode: 'HTML' });
+  }
+
+  // ─── Bot command: /stats ──────────────────────────────────────────────────
+
+  private async handleStatsCommand(ctx: Context): Promise<void> {
+    const telegramId = ctx.from?.id;
+    if (!telegramId) return;
+
+    const user = await this.usersRepo.findOne({ where: { telegramId } });
+    if (!user) {
+      await ctx.reply(
+        '❌ Аккаунт не найден. Открой приложение для регистрации.',
+      );
+      return;
+    }
+
+    const isRu = user.languageCode === 'ru';
+    const tz = user.timezone ?? 'UTC';
+    const today = this.getTodayStr(tz);
+    const monday = this.getMondayStr(tz);
+
+    const habits = await this.habitsRepo.find({
+      where: { userId: user.id, isActive: true },
+    });
+
+    const todayCompletions = await this.completionsRepo.find({
+      where: { userId: user.id, completedDate: today },
+    });
+
+    const weekCompletions = await this.completionsRepo.find({
+      where: { userId: user.id, completedDate: Between(monday, today) },
+    });
+
+    const bestStreak = habits.reduce(
+      (max, h) => Math.max(max, h.currentStreak),
+      0,
+    );
+
+    const allChallenges = await this.challengesService.findAllByUser(
+      user.id,
+      tz,
+    );
+    const activeChallengesCount = allChallenges.filter(
+      (c) => c.status === ChallengeStatus.ACTIVE,
+    ).length;
+
+    const lines = [
+      isRu ? '📊 <b>Статистика</b>' : '📊 <b>Stats</b>',
+      '',
+      isRu
+        ? `📅 Сегодня: <b>${todayCompletions.length}/${habits.length}</b>`
+        : `📅 Today: <b>${todayCompletions.length}/${habits.length}</b>`,
+      isRu
+        ? `📆 За неделю: <b>${weekCompletions.length}</b> отметок`
+        : `📆 This week: <b>${weekCompletions.length}</b> check-ins`,
+      isRu
+        ? `🔥 Лучший стрик: <b>${bestStreak}</b> дн.`
+        : `🔥 Best streak: <b>${bestStreak}</b> d.`,
+    ];
+
+    if (activeChallengesCount > 0) {
+      lines.push(
+        isRu
+          ? `🏆 Активных челленджей: <b>${activeChallengesCount}</b>`
+          : `🏆 Active challenges: <b>${activeChallengesCount}</b>`,
+      );
+    }
+
+    await ctx.reply(lines.join('\n'), { parse_mode: 'HTML' });
+  }
+
+  // ─── Bot command: /help ───────────────────────────────────────────────────
+
+  private async handleHelpCommand(ctx: Context): Promise<void> {
+    const isRu = ctx.from?.language_code === 'ru';
+    const text = isRu
+      ? [
+          '📖 <b>Команды</b>',
+          '',
+          '/today — привычки и челленджи на сегодня',
+          '/streak — текущие стрики',
+          '/stats — статистика за неделю',
+          '/help — этот список',
+        ].join('\n')
+      : [
+          '📖 <b>Commands</b>',
+          '',
+          "/today — today's habits and challenges",
+          '/streak — current streaks',
+          '/stats — weekly stats',
+          '/help — this list',
+        ].join('\n');
+
+    await ctx.reply(text, { parse_mode: 'HTML' });
+  }
+
+  private getTodayStr(timezone: string): string {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(
+      new Date(),
+    );
+  }
+
+  private getMondayStr(timezone: string): string {
+    const today = this.getTodayStr(timezone);
+    const date = new Date(today + 'T00:00:00');
+    const day = date.getDay();
+    const offset = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + offset);
+    return date.toISOString().split('T')[0];
   }
 
   private async buildTodayPayload(user: User): Promise<{
