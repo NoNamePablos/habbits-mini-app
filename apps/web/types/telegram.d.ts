@@ -62,6 +62,8 @@ export interface TelegramWebApp {
   onEvent: (eventType: string, callback: () => void) => void
   offEvent: (eventType: string, callback: () => void) => void
   openLink: (url: string) => void
+  openTelegramLink: (url: string) => void
+  copyTextToClipboard: (text: string, callback?: (success: boolean) => void) => void
   setHeaderColor: (color: string) => void
 }
 

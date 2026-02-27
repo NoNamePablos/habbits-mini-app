@@ -9,12 +9,13 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ChallengesService } from './challenges.service';
+import { ChallengesService, ChallengeDetailResult, LeaderboardEntry } from './challenges.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
 import { TelegramUser } from '../../core/telegram/telegram-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { Challenge } from './entities/challenge.entity';
+import { Challenge, ChallengeStatus } from './entities/challenge.entity';
 import { ChallengeDay } from './entities/challenge-day.entity';
+import { ChallengeParticipant } from './entities/challenge-participant.entity';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { CheckInChallengeDto } from './dto/check-in-challenge.dto';
@@ -22,13 +23,15 @@ import { AbandonChallengeDto } from './dto/abandon-challenge.dto';
 import { Achievement } from '../achievements/entities/achievement.entity';
 
 interface ChallengesListResponse {
-  challenges: Array<Challenge & { todayCheckedIn: boolean }>;
+  challenges: Array<Challenge & { todayCheckedIn: boolean; isCreator: boolean; participantStatus: ChallengeStatus | null }>;
 }
 
 interface ChallengeDetailResponse {
   challenge: Challenge;
   days: ChallengeDay[];
   todayCheckedIn: boolean;
+  isCreator: boolean;
+  participant: ChallengeParticipant | null;
 }
 
 interface UnlockedAchievementInfo {
@@ -119,5 +122,45 @@ export class ChallengesController {
     @Body() dto: AbandonChallengeDto,
   ): Promise<Challenge> {
     return this.challengesService.abandon(id, user.id, dto.reason);
+  }
+
+  @Post(':id/invite')
+  async generateInviteCode(
+    @TelegramUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ inviteCode: string }> {
+    return this.challengesService.generateInviteCode(id, user.id);
+  }
+
+  @Delete(':id/invite')
+  async revokeInviteCode(
+    @TelegramUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.challengesService.revokeInviteCode(id, user.id);
+  }
+
+  @Post('join/:code')
+  async joinByCode(
+    @TelegramUser() user: User,
+    @Param('code') code: string,
+  ): Promise<ChallengeDetailResult> {
+    return this.challengesService.joinByCode(code, user.id, user.timezone);
+  }
+
+  @Get(':id/leaderboard')
+  async getLeaderboard(
+    @TelegramUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<LeaderboardEntry[]> {
+    return this.challengesService.getLeaderboard(id, user.id);
+  }
+
+  @Delete(':id/participants/me')
+  async leaveChallenge(
+    @TelegramUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.challengesService.leaveChallenge(id, user.id);
   }
 }

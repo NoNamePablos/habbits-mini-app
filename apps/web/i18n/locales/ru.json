@@ -4,7 +4,8 @@
     "home": "Главная",
     "achievements": "Ачивки",
     "profile": "Профиль",
-    "challenges": "Челленджи"
+    "challenges": "Челленджи",
+    "friends": "Друзья"
   },
   "home": {
     "greeting": "Привет, {name}!",
@@ -174,7 +175,22 @@
     "abandonReasonTooHard": "Слишком сложно",
     "abandonReasonSchedule": "График изменился",
     "abandonReasonEarly": "Цель достигнута досрочно",
-    "abandonReasonOther": "Другая причина"
+    "abandonReasonOther": "Другая причина",
+    "inviteCode": "Пригласить в челлендж",
+    "shareInvite": "Поделиться приглашением",
+    "shareInviteText": "Присоединись к моему челленджу в Habits! Код:",
+    "inviteDescription": "Поделись этим кодом, чтобы друзья вступили в твой челлендж",
+    "joinByCode": "Вступить по коду",
+    "participants": "Участники",
+    "leaderboard": "Таблица",
+    "leaderboardEmpty": "Пока только ты",
+    "leave": "Покинуть",
+    "leaveConfirmTitle": "Покинуть челлендж?",
+    "leaveConfirmDescription": "Твой прогресс будет удалён.",
+    "joined": "Участник",
+    "creator": "Автор",
+    "you": "Ты",
+    "progress": "Прогресс"
   },
   "challengeTemplate": {
     "noSugar": "Без сахара",
@@ -279,6 +295,22 @@
     "nameRequired": "Название обязательно",
     "maxChars": "Максимум {max} символов"
   },
+  "friends": {
+    "title": "Друзья",
+    "myFriends": "Мои друзья",
+    "empty": "Пока нет друзей",
+    "emptyHint": "Поделись ссылкой-приглашением, чтобы добавить друзей",
+    "invite": "Пригласить друга",
+    "inviteText": "Присоединяйся к Habits — трекер привычек!",
+    "copyLink": "Скопировать ссылку",
+    "requests": "Входящие заявки",
+    "noRequests": "Нет входящих заявок",
+    "unknownUser": "Пользователь",
+    "requestSent": "Заявка отправлена",
+    "accept": "Принять",
+    "decline": "Отклонить",
+    "remove": "Удалить"
+  },
   "errors": {
     "title": "Ошибка",
     "fetchHabits": "Не удалось загрузить привычки",
@@ -305,7 +337,11 @@
     "deleteAccount": "Не удалось удалить аккаунт",
     "fetchGoal": "Не удалось загрузить цель",
     "createGoal": "Не удалось создать цель",
-    "abandonGoal": "Не удалось отменить цель"
+    "abandonGoal": "Не удалось отменить цель",
+    "fetchFriends": "Не удалось загрузить друзей",
+    "friendRequest": "Не удалось отправить заявку",
+    "joinChallenge": "Не удалось вступить в челлендж",
+    "generateInvite": "Не удалось создать ссылку"
   },
   "success": {
     "title": "Готово",
@@ -319,7 +355,12 @@
     "habitsCreated": "Привычки созданы!",
     "challengeAbandoned": "Челлендж отменён",
     "goalCreated": "Цель установлена!",
-    "testNotificationSent": "Уведомление отправлено!"
+    "testNotificationSent": "Уведомление отправлено!",
+    "friendAccepted": "Друг добавлен!",
+    "friendRequestSent": "Заявка отправлена",
+    "challengeJoined": "Вступил в челлендж!",
+    "inviteGenerated": "Ссылка создана",
+    "linkCopied": "Скопировано!"
   },
   "dailyLogin": {
     "earned": "Ежедневный бонус: +{xp} XP!",

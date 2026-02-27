@@ -4,7 +4,8 @@
     "home": "Home",
     "achievements": "Achievements",
     "profile": "Profile",
-    "challenges": "Challenges"
+    "challenges": "Challenges",
+    "friends": "Friends"
   },
   "home": {
     "greeting": "Hi, {name}!",
@@ -174,7 +175,22 @@
     "abandonReasonTooHard": "Too difficult",
     "abandonReasonSchedule": "Schedule changed",
     "abandonReasonEarly": "Goal achieved early",
-    "abandonReasonOther": "Other reason"
+    "abandonReasonOther": "Other reason",
+    "inviteCode": "Invite to Challenge",
+    "shareInvite": "Share Invite",
+    "shareInviteText": "Join my challenge on Habits! Code:",
+    "inviteDescription": "Share this code so friends can join your challenge",
+    "joinByCode": "Join by Code",
+    "participants": "Participants",
+    "leaderboard": "Leaderboard",
+    "leaderboardEmpty": "Only you so far",
+    "leave": "Leave",
+    "leaveConfirmTitle": "Leave challenge?",
+    "leaveConfirmDescription": "Your progress will be removed.",
+    "joined": "Participant",
+    "creator": "Creator",
+    "you": "You",
+    "progress": "Progress"
   },
   "challengeTemplate": {
     "noSugar": "No Sugar",
@@ -279,6 +295,22 @@
     "nameRequired": "Name is required",
     "maxChars": "Maximum {max} characters"
   },
+  "friends": {
+    "title": "Friends",
+    "myFriends": "My Friends",
+    "empty": "No friends yet",
+    "emptyHint": "Share your invite link to add friends",
+    "invite": "Invite a Friend",
+    "inviteText": "Join me on Habits — a habit tracker!",
+    "copyLink": "Copy link",
+    "requests": "Incoming requests",
+    "noRequests": "No incoming requests",
+    "unknownUser": "User",
+    "requestSent": "Request sent",
+    "accept": "Accept",
+    "decline": "Decline",
+    "remove": "Remove"
+  },
   "errors": {
     "title": "Error",
     "fetchHabits": "Failed to load habits",
@@ -305,7 +337,11 @@
     "deleteAccount": "Failed to delete account",
     "fetchGoal": "Failed to load goal",
     "createGoal": "Failed to create goal",
-    "abandonGoal": "Failed to cancel goal"
+    "abandonGoal": "Failed to cancel goal",
+    "fetchFriends": "Failed to load friends",
+    "friendRequest": "Failed to send friend request",
+    "joinChallenge": "Failed to join challenge",
+    "generateInvite": "Failed to generate invite"
   },
   "success": {
     "title": "Done",
@@ -319,7 +355,12 @@
     "habitsCreated": "Habits created!",
     "challengeAbandoned": "Challenge abandoned",
     "goalCreated": "Goal set!",
-    "testNotificationSent": "Notification sent!"
+    "testNotificationSent": "Notification sent!",
+    "friendAccepted": "Friend added!",
+    "friendRequestSent": "Request sent",
+    "challengeJoined": "Joined challenge!",
+    "inviteGenerated": "Invite link ready",
+    "linkCopied": "Copied!"
   },
   "dailyLogin": {
     "earned": "Daily bonus: +{xp} XP!",

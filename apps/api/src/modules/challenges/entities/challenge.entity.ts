@@ -67,4 +67,7 @@ export class Challenge extends BaseEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   abandonReason: string | null;
+
+  @Column({ type: 'varchar', length: 8, unique: true, nullable: true, default: null })
+  inviteCode: string | null;
 }

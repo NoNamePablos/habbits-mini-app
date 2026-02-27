@@ -5,7 +5,7 @@ const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
 
 const xpRemaining = computed<number>(() =>
-  Math.max(0, gamificationStore.xpForNextLevel - gamificationStore.xp),
+  Math.max(0, gamificationStore.xpForNextLevel - gamificationStore.xpForCurrentLevel),
 )
 </script>
 
@@ -47,7 +47,7 @@ const xpRemaining = computed<number>(() =>
         <div class="mt-2.5">
           <div class="flex items-center justify-between mb-1">
             <span class="text-[10px] text-muted-foreground">
-              {{ gamificationStore.xp }} / {{ gamificationStore.xpForNextLevel }} XP
+              {{ gamificationStore.xpForCurrentLevel }} / {{ gamificationStore.xpForNextLevel }} XP
             </span>
             <span class="text-[10px] text-muted-foreground">
               {{ gamificationStore.progressPercent }}%

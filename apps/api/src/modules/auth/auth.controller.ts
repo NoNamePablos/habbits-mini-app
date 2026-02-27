@@ -29,7 +29,7 @@ export class AuthController {
   @Post('telegram')
   @UseGuards(TelegramAuthGuard)
   async authenticate(@TelegramUser() user: User): Promise<AuthResponse> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: user.timezone ?? 'UTC' }).format(new Date());
     let dailyLoginXp: number | null = null;
 
     if (user.lastLoginDate !== today) {

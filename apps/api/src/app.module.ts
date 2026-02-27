@@ -13,6 +13,7 @@ import { StatsModule } from './modules/stats/stats.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { FriendsModule } from './modules/friends/friends.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ChallengesModule,
     GoalsModule,
     NotificationsModule,
+    FriendsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

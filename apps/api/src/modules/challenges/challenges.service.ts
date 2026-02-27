@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -11,6 +12,7 @@ import {
   ChallengeDay,
   ChallengeDayStatus,
 } from './entities/challenge-day.entity';
+import { ChallengeParticipant } from './entities/challenge-participant.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
@@ -46,10 +48,25 @@ interface CheckInResult {
   unlockedAchievements: UnlockedAchievementInfo[];
 }
 
-interface ChallengeDetailResult {
+export interface ChallengeDetailResult {
   challenge: Challenge;
   days: ChallengeDay[];
   todayCheckedIn: boolean;
+  isCreator: boolean;
+  participant: ChallengeParticipant | null;
+}
+
+export interface LeaderboardEntry {
+  userId: number;
+  username: string | null;
+  firstName: string | null;
+  photoUrl: string | null;
+  level: number;
+  completedDays: number;
+  currentStreak: number;
+  bestStreak: number;
+  status: ChallengeStatus;
+  isCreator: boolean;
 }
 
 @Injectable()
@@ -59,6 +76,8 @@ export class ChallengesService {
     private readonly challengesRepo: Repository<Challenge>,
     @InjectRepository(ChallengeDay)
     private readonly daysRepo: Repository<ChallengeDay>,
+    @InjectRepository(ChallengeParticipant)
+    private readonly participantsRepo: Repository<ChallengeParticipant>,
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
     private readonly dataSource: DataSource,
@@ -69,50 +88,76 @@ export class ChallengesService {
   async findAllByUser(
     userId: number,
     timezone: string = 'UTC',
-  ): Promise<Array<Challenge & { todayCheckedIn: boolean }>> {
-    const challenges = await this.challengesRepo.find({
+  ): Promise<Array<Challenge & { todayCheckedIn: boolean; isCreator: boolean; participantStatus: ChallengeStatus | null }>> {
+    const createdChallenges = await this.challengesRepo.find({
       where: { userId },
       order: { createdAt: 'DESC' },
     });
 
+    const participantRecords = await this.participantsRepo.find({
+      where: { userId },
+      relations: ['challenge'],
+      order: { createdAt: 'DESC' },
+    });
+
     const today = this.getTodayDate(timezone);
-    const activeChallengeIds = challenges
-      .filter((c) => c.status === ChallengeStatus.ACTIVE)
-      .map((c) => c.id);
 
-    // Single query for all today's check-ins
-    let todayCheckIns = new Set<number>();
-    if (activeChallengeIds.length > 0) {
-      const rows = await this.daysRepo.find({
-        where: {
-          challengeId: In(activeChallengeIds),
-          dayDate: today,
-          status: ChallengeDayStatus.COMPLETED,
-        },
-        select: ['challengeId'],
-      });
-      todayCheckIns = new Set(rows.map((r) => r.challengeId));
-    }
-
-    // Sync missed days for active challenges
-    for (const c of challenges) {
+    // Sync missed days for creator's active challenges
+    for (const c of createdChallenges) {
       if (c.status === ChallengeStatus.ACTIVE) {
         await this.syncMissedDays(c, timezone);
       }
     }
 
-    // Sort: active first, then by createdAt DESC
-    const sorted = challenges.sort((a, b) => {
+    // Collect all challenge IDs to check today's check-ins
+    const activeChallengeIds = createdChallenges
+      .filter((c) => c.status === ChallengeStatus.ACTIVE)
+      .map((c) => c.id);
+    const activeParticipantChallengeIds = participantRecords
+      .filter((p) => p.status === ChallengeStatus.ACTIVE)
+      .map((p) => p.challengeId);
+    const allActiveIds = [...activeChallengeIds, ...activeParticipantChallengeIds];
+
+    let todayCheckIns = new Set<string>(); // "challengeId:userId"
+    if (allActiveIds.length > 0) {
+      const rows = await this.daysRepo.find({
+        where: {
+          challengeId: In(allActiveIds),
+          userId,
+          dayDate: today,
+          status: ChallengeDayStatus.COMPLETED,
+        },
+        select: ['challengeId'],
+      });
+      for (const r of rows) {
+        todayCheckIns.add(`${r.challengeId}:${userId}`);
+      }
+    }
+
+    const createdResults = createdChallenges.map((c) => ({
+      ...c,
+      todayCheckedIn: todayCheckIns.has(`${c.id}:${userId}`),
+      isCreator: true,
+      participantStatus: null as ChallengeStatus | null,
+    }));
+
+    const createdIds = new Set(createdChallenges.map((c) => c.id));
+    const participantResults = participantRecords
+      .filter((p) => !createdIds.has(p.challengeId))
+      .map((p) => ({
+        ...p.challenge,
+        todayCheckedIn: todayCheckIns.has(`${p.challengeId}:${userId}`),
+        isCreator: false,
+        participantStatus: p.status,
+      }));
+
+    const all = [...createdResults, ...participantResults];
+    return all.sort((a, b) => {
       const aActive = a.status === ChallengeStatus.ACTIVE ? 0 : 1;
       const bActive = b.status === ChallengeStatus.ACTIVE ? 0 : 1;
       if (aActive !== bActive) return aActive - bActive;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-
-    return sorted.map((c) => ({
-      ...c,
-      todayCheckedIn: todayCheckIns.has(c.id),
-    }));
   }
 
   async findOneWithDays(
@@ -120,30 +165,37 @@ export class ChallengesService {
     userId: number,
     timezone: string = 'UTC',
   ): Promise<ChallengeDetailResult> {
-    const challenge = await this.challengesRepo.findOne({
-      where: { id, userId },
-    });
+    let challenge = await this.challengesRepo.findOne({ where: { id, userId } });
+    let isCreator = true;
+    let participant: ChallengeParticipant | null = null;
+
     if (!challenge) {
-      throw new NotFoundException('Challenge not found');
+      participant = await this.participantsRepo.findOne({
+        where: { challengeId: id, userId },
+        relations: ['challenge'],
+      });
+      if (!participant) {
+        throw new NotFoundException('Challenge not found');
+      }
+      challenge = participant.challenge;
+      isCreator = false;
     }
 
-    // Sync missed days for active challenges
-    if (challenge.status === ChallengeStatus.ACTIVE) {
+    if (isCreator && challenge.status === ChallengeStatus.ACTIVE) {
       await this.syncMissedDays(challenge, timezone);
     }
 
     const days = await this.daysRepo.find({
-      where: { challengeId: id },
+      where: { challengeId: id, userId },
       order: { dayDate: 'ASC' },
     });
 
     const today = this.getTodayDate(timezone);
     const todayCheckedIn = days.some(
-      (d) =>
-        d.dayDate === today && d.status === ChallengeDayStatus.COMPLETED,
+      (d) => d.dayDate === today && d.status === ChallengeDayStatus.COMPLETED,
     );
 
-    return { challenge, days, todayCheckedIn };
+    return { challenge, days, todayCheckedIn, isCreator, participant };
   }
 
   async create(userId: number, dto: CreateChallengeDto): Promise<Challenge> {
@@ -187,115 +239,25 @@ export class ChallengesService {
     dto: CheckInChallengeDto,
     timezone: string = 'UTC',
   ): Promise<CheckInResult> {
-    const challenge = await this.findOneOrFail(id, userId);
-    const today = this.getTodayDate(timezone);
+    const challenge = await this.challengesRepo.findOne({ where: { id } });
+    if (!challenge) throw new NotFoundException('Challenge not found');
 
-    if (challenge.status !== ChallengeStatus.ACTIVE) {
-      throw new BadRequestException('Challenge is not active');
+    const isCreator = challenge.userId === userId;
+
+    if (!isCreator) {
+      const participant = await this.participantsRepo.findOne({
+        where: { challengeId: id, userId },
+      });
+      if (!participant) {
+        throw new ForbiddenException('Not a participant of this challenge');
+      }
+      if (participant.status !== ChallengeStatus.ACTIVE) {
+        throw new BadRequestException('Your participation is not active');
+      }
+      return this.participantCheckIn(challenge, participant, userId, dto, timezone);
     }
 
-    if (today < challenge.startDate || today > challenge.endDate) {
-      throw new BadRequestException('Today is outside the challenge period');
-    }
-
-    // Check for duplicate
-    const existing = await this.daysRepo.findOne({
-      where: { challengeId: id, dayDate: today },
-    });
-    if (
-      existing &&
-      existing.status === ChallengeDayStatus.COMPLETED
-    ) {
-      throw new ConflictException('Already checked in today');
-    }
-
-    // Sync missed days first (may fail the challenge)
-    await this.syncMissedDays(challenge, timezone);
-
-    if (challenge.status !== ChallengeStatus.ACTIVE) {
-      throw new BadRequestException(
-        'Challenge failed due to too many missed days',
-      );
-    }
-
-    // If there was a "missed" record for today (from sync), remove it
-    if (existing && existing.status === ChallengeDayStatus.MISSED) {
-      await this.daysRepo.remove(existing);
-      challenge.missedDays = Math.max(0, challenge.missedDays - 1);
-    }
-
-    // Create check-in
-    const xpEarned = XP_PER_CHECKIN;
-    const day = this.daysRepo.create({
-      challengeId: id,
-      userId,
-      dayDate: today,
-      status: ChallengeDayStatus.COMPLETED,
-      note: dto.note ?? null,
-      xpEarned,
-    });
-
-    challenge.completedDays += 1;
-
-    // Recalculate streak
-    const streak = await this.recalculateStreak(id, day);
-    challenge.currentStreak = streak;
-    if (streak > challenge.bestStreak) {
-      challenge.bestStreak = streak;
-    }
-
-    const streakBonusXp = this.getStreakBonus(challenge.currentStreak);
-
-    // Check if challenge is now complete
-    const totalAccountedDays = challenge.completedDays + challenge.missedDays;
-    let challengeCompleted = false;
-    let completionBonusXp = 0;
-
-    if (totalAccountedDays >= challenge.durationDays) {
-      challenge.status = ChallengeStatus.COMPLETED;
-      challenge.completedAt = new Date();
-      challengeCompleted = true;
-      completionBonusXp = this.getCompletionBonus(challenge.durationDays);
-    }
-
-    // Save in transaction
-    await this.dataSource.transaction(async (manager) => {
-      await manager.save(day);
-      await manager.save(challenge);
-    });
-
-    // Award XP
-    const totalXp = xpEarned + streakBonusXp + completionBonusXp;
-    const xpResult = await this.gamificationService.awardXp(
-      userId,
-      totalXp,
-      'challenge',
-      id,
-    );
-
-    // Check achievements
-    let unlockedAchievements: UnlockedAchievementInfo[] = [];
-    if (challengeCompleted) {
-      unlockedAchievements =
-        await this.achievementsService.checkAfterChallengeCompletion({
-          userId,
-          challengeId: id,
-          durationDays: challenge.durationDays,
-          missedDays: challenge.missedDays,
-        });
-    }
-
-    return {
-      day,
-      challenge,
-      xpEarned,
-      streakBonusXp,
-      completionBonusXp,
-      leveledUp: xpResult.leveledUp,
-      newLevel: xpResult.newLevel,
-      challengeCompleted,
-      unlockedAchievements,
-    };
+    return this.creatorCheckIn(challenge, userId, dto, timezone);
   }
 
   async undoCheckIn(
@@ -308,6 +270,7 @@ export class ChallengesService {
     const day = await this.daysRepo.findOne({
       where: {
         challengeId: id,
+        userId,
         dayDate: date,
         status: ChallengeDayStatus.COMPLETED,
       },
@@ -319,7 +282,7 @@ export class ChallengesService {
     await this.daysRepo.remove(day);
 
     challenge.completedDays = Math.max(0, challenge.completedDays - 1);
-    const streak = await this.recalculateStreak(id);
+    const streak = await this.recalculateStreak(id, userId);
     challenge.currentStreak = streak;
 
     return this.challengesRepo.save(challenge);
@@ -335,6 +298,287 @@ export class ChallengesService {
     challenge.status = ChallengeStatus.ABANDONED;
     challenge.abandonReason = reason ?? null;
     return this.challengesRepo.save(challenge);
+  }
+
+  // ── Social features ──────────────────────────────────────────────────────────
+
+  async generateInviteCode(id: number, userId: number): Promise<{ inviteCode: string }> {
+    const challenge = await this.findOneOrFail(id, userId);
+
+    if (challenge.status !== ChallengeStatus.ACTIVE) {
+      throw new BadRequestException('Can only invite to active challenges');
+    }
+
+    if (challenge.inviteCode) {
+      return { inviteCode: challenge.inviteCode };
+    }
+
+    const code = this.generateCode(8);
+    challenge.inviteCode = code;
+    await this.challengesRepo.save(challenge);
+    return { inviteCode: code };
+  }
+
+  async revokeInviteCode(id: number, userId: number): Promise<void> {
+    const challenge = await this.findOneOrFail(id, userId);
+    challenge.inviteCode = null;
+    await this.challengesRepo.save(challenge);
+  }
+
+  async joinByCode(
+    code: string,
+    userId: number,
+    timezone: string = 'UTC',
+  ): Promise<ChallengeDetailResult> {
+    const challenge = await this.challengesRepo.findOne({
+      where: { inviteCode: code },
+    });
+    if (!challenge) throw new NotFoundException('Invite code not found');
+
+    if (challenge.status !== ChallengeStatus.ACTIVE) {
+      throw new BadRequestException('Challenge is no longer active');
+    }
+
+    if (challenge.userId === userId) {
+      throw new BadRequestException('You are the creator of this challenge');
+    }
+
+    const existing = await this.participantsRepo.findOne({
+      where: { challengeId: challenge.id, userId },
+    });
+    if (existing) {
+      throw new ConflictException('Already joined this challenge');
+    }
+
+    const participant = this.participantsRepo.create({
+      challengeId: challenge.id,
+      userId,
+      status: ChallengeStatus.ACTIVE,
+    });
+    await this.participantsRepo.save(participant);
+
+    return this.findOneWithDays(challenge.id, userId, timezone);
+  }
+
+  async getLeaderboard(id: number, userId: number): Promise<LeaderboardEntry[]> {
+    const challenge = await this.challengesRepo.findOne({ where: { id } });
+    if (!challenge) throw new NotFoundException('Challenge not found');
+
+    // Verify caller is creator or participant
+    const isCreator = challenge.userId === userId;
+    if (!isCreator) {
+      const participant = await this.participantsRepo.findOne({
+        where: { challengeId: id, userId },
+      });
+      if (!participant) throw new ForbiddenException();
+    }
+
+    const participants = await this.participantsRepo.find({
+      where: { challengeId: id },
+      relations: ['user'],
+    });
+
+    const creator = await this.usersRepo.findOne({ where: { id: challenge.userId } });
+
+    const entries: LeaderboardEntry[] = [];
+
+    if (creator) {
+      entries.push({
+        userId: creator.id,
+        username: creator.username ?? null,
+        firstName: creator.firstName ?? null,
+        photoUrl: creator.photoUrl ?? null,
+        level: creator.level,
+        completedDays: challenge.completedDays,
+        currentStreak: challenge.currentStreak,
+        bestStreak: challenge.bestStreak,
+        status: challenge.status,
+        isCreator: true,
+      });
+    }
+
+    for (const p of participants) {
+      entries.push({
+        userId: p.user.id,
+        username: p.user.username ?? null,
+        firstName: p.user.firstName ?? null,
+        photoUrl: p.user.photoUrl ?? null,
+        level: p.user.level,
+        completedDays: p.completedDays,
+        currentStreak: p.currentStreak,
+        bestStreak: p.bestStreak,
+        status: p.status,
+        isCreator: false,
+      });
+    }
+
+    return entries.sort((a, b) => b.completedDays - a.completedDays);
+  }
+
+  async leaveChallenge(id: number, userId: number): Promise<void> {
+    const participant = await this.participantsRepo.findOne({
+      where: { challengeId: id, userId },
+    });
+    if (!participant) throw new NotFoundException('Participation not found');
+    await this.participantsRepo.remove(participant);
+  }
+
+  // ── Private helpers ──────────────────────────────────────────────────────────
+
+  private async creatorCheckIn(
+    challenge: Challenge,
+    userId: number,
+    dto: CheckInChallengeDto,
+    timezone: string,
+  ): Promise<CheckInResult> {
+    const today = this.getTodayDate(timezone);
+
+    if (challenge.status !== ChallengeStatus.ACTIVE) {
+      throw new BadRequestException('Challenge is not active');
+    }
+
+    if (today < challenge.startDate || today > challenge.endDate) {
+      throw new BadRequestException('Today is outside the challenge period');
+    }
+
+    const existing = await this.daysRepo.findOne({
+      where: { challengeId: challenge.id, userId, dayDate: today },
+    });
+    if (existing && existing.status === ChallengeDayStatus.COMPLETED) {
+      throw new ConflictException('Already checked in today');
+    }
+
+    await this.syncMissedDays(challenge, timezone);
+
+    if (challenge.status !== ChallengeStatus.ACTIVE) {
+      throw new BadRequestException('Challenge failed due to too many missed days');
+    }
+
+    if (existing && existing.status === ChallengeDayStatus.MISSED) {
+      await this.daysRepo.remove(existing);
+      challenge.missedDays = Math.max(0, challenge.missedDays - 1);
+    }
+
+    const xpEarned = XP_PER_CHECKIN;
+    const day = this.daysRepo.create({
+      challengeId: challenge.id,
+      userId,
+      dayDate: today,
+      status: ChallengeDayStatus.COMPLETED,
+      note: dto.note ?? null,
+      xpEarned,
+    });
+
+    challenge.completedDays += 1;
+
+    const streak = await this.recalculateStreak(challenge.id, userId, day);
+    challenge.currentStreak = streak;
+    if (streak > challenge.bestStreak) challenge.bestStreak = streak;
+
+    const streakBonusXp = this.getStreakBonus(challenge.currentStreak);
+
+    const totalAccountedDays = challenge.completedDays + challenge.missedDays;
+    let challengeCompleted = false;
+    let completionBonusXp = 0;
+
+    if (totalAccountedDays >= challenge.durationDays) {
+      challenge.status = ChallengeStatus.COMPLETED;
+      challenge.completedAt = new Date();
+      challengeCompleted = true;
+      completionBonusXp = this.getCompletionBonus(challenge.durationDays);
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(day);
+      await manager.save(challenge);
+    });
+
+    const totalXp = xpEarned + streakBonusXp + completionBonusXp;
+    const xpResult = await this.gamificationService.awardXp(userId, totalXp, 'challenge', challenge.id);
+
+    let unlockedAchievements: UnlockedAchievementInfo[] = [];
+    if (challengeCompleted) {
+      unlockedAchievements = await this.achievementsService.checkAfterChallengeCompletion({
+        userId,
+        challengeId: challenge.id,
+        durationDays: challenge.durationDays,
+        missedDays: challenge.missedDays,
+      });
+    }
+
+    return {
+      day,
+      challenge,
+      xpEarned,
+      streakBonusXp,
+      completionBonusXp,
+      leveledUp: xpResult.leveledUp,
+      newLevel: xpResult.newLevel,
+      challengeCompleted,
+      unlockedAchievements,
+    };
+  }
+
+  private async participantCheckIn(
+    challenge: Challenge,
+    participant: ChallengeParticipant,
+    userId: number,
+    dto: CheckInChallengeDto,
+    timezone: string,
+  ): Promise<CheckInResult> {
+    const today = this.getTodayDate(timezone);
+
+    if (challenge.status !== ChallengeStatus.ACTIVE) {
+      throw new BadRequestException('Challenge is not active');
+    }
+
+    if (today < challenge.startDate || today > challenge.endDate) {
+      throw new BadRequestException('Today is outside the challenge period');
+    }
+
+    const existing = await this.daysRepo.findOne({
+      where: { challengeId: challenge.id, userId, dayDate: today },
+    });
+    if (existing && existing.status === ChallengeDayStatus.COMPLETED) {
+      throw new ConflictException('Already checked in today');
+    }
+
+    const xpEarned = XP_PER_CHECKIN;
+    const day = this.daysRepo.create({
+      challengeId: challenge.id,
+      userId,
+      dayDate: today,
+      status: ChallengeDayStatus.COMPLETED,
+      note: dto.note ?? null,
+      xpEarned,
+    });
+
+    participant.completedDays += 1;
+
+    const streak = await this.recalculateStreak(challenge.id, userId, day);
+    participant.currentStreak = streak;
+    if (streak > participant.bestStreak) participant.bestStreak = streak;
+
+    const streakBonusXp = this.getStreakBonus(participant.currentStreak);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(day);
+      await manager.save(participant);
+    });
+
+    const xpResult = await this.gamificationService.awardXp(userId, xpEarned + streakBonusXp, 'challenge', challenge.id);
+
+    return {
+      day,
+      challenge,
+      xpEarned,
+      streakBonusXp,
+      completionBonusXp: 0,
+      leveledUp: xpResult.leveledUp,
+      newLevel: xpResult.newLevel,
+      challengeCompleted: false,
+      unlockedAchievements: [],
+    };
   }
 
   private async findOneOrFail(
@@ -358,13 +602,12 @@ export class ChallengesService {
 
     const today = this.getTodayDate(timezone);
     const existingDays = await this.daysRepo.find({
-      where: { challengeId: challenge.id },
+      where: { challengeId: challenge.id, userId: challenge.userId },
       order: { dayDate: 'DESC' },
     });
 
     const existingDates = new Set(existingDays.map((d) => d.dayDate));
 
-    // Find the range to check: from startDate to yesterday
     const yesterday = this.addDays(today, -1);
     if (yesterday < challenge.startDate) return;
 
@@ -402,23 +645,24 @@ export class ChallengesService {
 
   private async recalculateStreak(
     challengeId: number,
+    userId: number,
     pendingDay?: ChallengeDay,
   ): Promise<number> {
     const completedDays = await this.daysRepo.find({
       where: {
         challengeId,
+        userId,
         status: ChallengeDayStatus.COMPLETED,
       },
       order: { dayDate: 'DESC' },
       take: 365,
     });
 
-    // Include pending day not yet saved
     const allDates = completedDays.map((d) => d.dayDate);
     if (pendingDay && !allDates.includes(pendingDay.dayDate)) {
       allDates.push(pendingDay.dayDate);
     }
-    allDates.sort((a, b) => (a > b ? -1 : 1)); // DESC
+    allDates.sort((a, b) => (a > b ? -1 : 1));
 
     if (allDates.length === 0) return 0;
 
@@ -459,5 +703,15 @@ export class ChallengesService {
     const date = new Date(dateStr);
     date.setDate(date.getDate() + days);
     return date.toISOString().split('T')[0];
+  }
+
+  private generateCode(length: number): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const crypto = require('crypto');
+    let code = '';
+    for (let i = 0; i < length; i++) {
+      code += chars[crypto.randomInt(0, chars.length)];
+    }
+    return code;
   }
 }

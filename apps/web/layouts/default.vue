@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { Flame, Home, Trophy, User, Settings, Search } from 'lucide-vue-next'
+import { Flame, Home, Trophy, User, Settings, Search, Users } from 'lucide-vue-next'
 import type { Component } from 'vue'
 
 const authStore = useAuthStore()
+const friendsStore = useFriendsStore()
+const challengesStore = useChallengesStore()
 const showSearch = ref<boolean>(false)
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
 const route = useRoute()
 const { t } = useI18n()
+const { webApp } = useTelegram()
 
-const { achievementsBadge, markAchievementsSeen } = useNavBadges()
+const { achievementsBadge, friendRequestsBadge, markAchievementsSeen } = useNavBadges()
 
 const lastMondayISO = ((): string => {
   const now = new Date()
@@ -25,10 +28,27 @@ const { hasSeenOnboarding: hasSeenWeeklySummary, markAsSeen: markWeeklySummarySe
 
 onMounted(async () => {
   await authStore.authenticate()
-  await gamificationStore.fetchProfile()
+  await Promise.all([
+    gamificationStore.fetchProfile(),
+    friendsStore.fetchPendingCount(),
+  ])
 
   if (new Date().getDay() === 1 && !toValue(hasSeenWeeklySummary)) {
     await statsStore.fetchWeeklySummary()
+  }
+
+  // Handle deep links from Telegram start_param
+  const startParam = webApp?.initDataUnsafe?.start_param
+  if (startParam) {
+    if (startParam.startsWith('fi_')) {
+      const code = startParam.slice(3)
+      const ok = await friendsStore.requestByCode(code)
+      if (ok) navigateTo('/friends')
+    } else if (startParam.startsWith('ci_')) {
+      const code = startParam.slice(3)
+      const result = await challengesStore.joinByCode(code)
+      if (result) navigateTo(`/challenges/${result.challenge.id}`)
+    }
   }
 })
 
@@ -41,6 +61,7 @@ interface NavTab {
 const tabs = computed<NavTab[]>(() => [
   { path: '/', icon: Home, label: t('nav.home') },
   { path: '/challenges', icon: Flame, label: t('nav.challenges') },
+  { path: '/friends', icon: Users, label: t('nav.friends') },
   { path: '/achievements', icon: Trophy, label: t('nav.achievements') },
   { path: '/profile', icon: User, label: t('nav.profile') },
 ])
@@ -82,7 +103,7 @@ const onWeeklySummaryClose = (): void => {
 
 <template>
   <div class="flex flex-col h-full bg-background text-foreground bg-mesh">
-    <header class="flex items-center justify-between px-3 py-2 glass-nav border-b border-white/10 dark:border-white/5">
+    <header class="flex items-center justify-between px-3 py-2 glass-nav border-b border-black/[0.07] dark:border-white/10">
       <div class="flex items-center gap-1.5">
         <Flame class="h-4 w-4 text-primary icon-glow" />
         <span class="text-sm font-bold tracking-wide">{{ $t('nav.appTitle') }}</span>
@@ -104,12 +125,12 @@ const onWeeklySummaryClose = (): void => {
       </div>
     </main>
 
-    <nav class="flex items-center justify-around glass-nav border-t border-white/10 dark:border-white/5 pb-safe">
+    <nav class="flex items-center justify-around glass-nav border-t border-black/[0.07] dark:border-white/10 pb-safe">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.path"
         :to="tab.path"
-        class="flex flex-col items-center gap-0.5 py-1.5 px-4 transition-colors"
+        class="flex flex-col items-center gap-0.5 py-1.5 px-3 transition-colors"
         :class="[activeTab === tab.path ? 'text-primary' : 'text-muted-foreground']"
       >
         <div
@@ -130,6 +151,19 @@ const onWeeklySummaryClose = (): void => {
             class="absolute -top-1 -right-1.5 min-w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center px-0.5"
           >
             {{ achievementsBadge > 9 ? '9+' : achievementsBadge }}
+          </span>
+        </div>
+        <div v-else-if="tab.path === '/friends'" class="relative">
+          <component
+            :is="tab.icon"
+            class="h-5 w-5"
+            :class="activeTab === tab.path ? 'icon-glow' : ''"
+          />
+          <span
+            v-if="friendRequestsBadge > 0"
+            class="absolute -top-1 -right-1.5 min-w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center px-0.5"
+          >
+            {{ friendRequestsBadge > 9 ? '9+' : friendRequestsBadge }}
           </span>
         </div>
         <component

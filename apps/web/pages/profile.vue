@@ -194,7 +194,7 @@ const goalsHistoryByMonth = computed(() => {
 
         <div class="mt-4">
           <div class="flex justify-between text-xs text-muted-foreground mb-1">
-            <span>{{ gamificationStore.xp }} XP</span>
+            <span>{{ gamificationStore.xpForCurrentLevel }} XP</span>
             <span>{{ gamificationStore.xpForNextLevel }} XP</span>
           </div>
           <div class="h-2 bg-foreground/10 rounded-full overflow-hidden">

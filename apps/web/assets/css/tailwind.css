@@ -60,12 +60,12 @@
   --color-popover: var(--tg-theme-secondary-bg-color, #ffffff);
   --color-popover-foreground: var(--tg-theme-text-color, #000000);
 
-  /* Glass tokens — light mode */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-bg-heavy: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  /* Glass tokens — light mode: opaque white cards with subtle shadow */
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.98);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(0, 0, 0, 0.04);
+  --glass-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.09);
   --glass-blur: 16px;
   --glass-blur-heavy: 24px;
 
@@ -74,22 +74,20 @@
   --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
   --gradient-gold: linear-gradient(135deg, #f59e0b, #eab308);
 
-  /* Ambient background mesh */
-  --bg-mesh: radial-gradient(
-      ellipse at 20% 50%,
-      color-mix(in srgb, var(--color-primary), transparent 92%) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 80% 20%,
-      color-mix(in srgb, #a855f7, transparent 94%) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 60% 80%,
-      color-mix(in srgb, #3b82f6, transparent 94%) 0%,
-      transparent 50%
-    );
+  /* No mesh in light mode — colored blotches look bad on light backgrounds */
+  --bg-mesh: none;
+}
+
+/*
+ * Light-mode color fix:
+ * Telegram convention: bg_color = card/surface, secondary_bg_color = page background.
+ * `:root` has them inverted (bg as page, secondary as card), so fix it here.
+ */
+:root:not(.dark) {
+  --color-background: var(--tg-theme-secondary-bg-color, #efeff4);
+  --color-card: var(--tg-theme-bg-color, #ffffff);
+  --color-popover: var(--tg-theme-bg-color, #ffffff);
+  --color-popover-foreground: var(--tg-theme-text-color, #000000);
 }
 
 /* ========================================
@@ -153,9 +151,15 @@
 
 .glass-nav {
   background: var(--glass-bg-heavy);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border-color: var(--glass-border);
+}
+
+:root:not(.dark) .glass-nav {
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .bg-mesh {

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, UseGuards } from '@nestjs/common';
 import { AchievementsService } from './achievements.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
 import { TelegramUser } from '../../core/telegram/telegram-user.decorator';
@@ -16,6 +16,7 @@ export class AchievementsController {
   constructor(private readonly achievementsService: AchievementsService) {}
 
   @Get()
+  @Header('Cache-Control', 'private, max-age=300')
   async findAll(@TelegramUser() user: User): Promise<AchievementWithStatus[]> {
     return this.achievementsService.getAllForUser(user.id);
   }

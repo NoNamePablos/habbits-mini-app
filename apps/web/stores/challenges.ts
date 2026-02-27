@@ -6,6 +6,8 @@ import type {
   ChallengeDetailResponse,
   CheckInResponse,
   CreateChallengePayload,
+  LeaderboardEntry,
+  ChallengeInviteResponse,
 } from '~/types/challenge'
 
 export const useChallengesStore = defineStore('challenges', () => {
@@ -111,12 +113,61 @@ export const useChallengesStore = defineStore('challenges', () => {
       const updated = await api.post<Challenge>(`/challenges/${id}/abandon`, reason ? { reason } : {})
       const idx = toValue(challenges).findIndex((c) => c.id === id)
       if (idx !== -1) {
-        challenges.value[idx] = { ...updated, todayCheckedIn: false }
+        challenges.value[idx] = { ...updated, todayCheckedIn: false, isCreator: true, participantStatus: null }
       }
       return updated
     } catch (error) {
       handleError(error, 'errors.abandonChallenge')
       return null
+    }
+  }
+
+  const generateInviteCode = async (id: number): Promise<string | null> => {
+    try {
+      const result = await api.post<ChallengeInviteResponse>(`/challenges/${id}/invite`, {})
+      return result.inviteCode
+    } catch (error) {
+      handleError(error, 'errors.generateInvite')
+      return null
+    }
+  }
+
+  const revokeInviteCode = async (id: number): Promise<boolean> => {
+    try {
+      await api.del(`/challenges/${id}/invite`)
+      return true
+    } catch (error) {
+      handleError(error, 'errors.generateInvite')
+      return false
+    }
+  }
+
+  const joinByCode = async (code: string): Promise<ChallengeDetailResponse | null> => {
+    try {
+      return await api.post<ChallengeDetailResponse>(`/challenges/join/${code}`, {})
+    } catch (error) {
+      handleError(error, 'errors.joinChallenge')
+      return null
+    }
+  }
+
+  const getLeaderboard = async (id: number): Promise<LeaderboardEntry[]> => {
+    try {
+      return await api.get<LeaderboardEntry[]>(`/challenges/${id}/leaderboard`)
+    } catch (error) {
+      handleError(error, 'errors.fetchChallenges')
+      return []
+    }
+  }
+
+  const leaveChallenge = async (id: number): Promise<boolean> => {
+    try {
+      await api.del(`/challenges/${id}/participants/me`)
+      challenges.value = toValue(challenges).filter((c) => c.id !== id)
+      return true
+    } catch (error) {
+      handleError(error, 'errors.abandonChallenge')
+      return false
     }
   }
 
@@ -133,5 +184,10 @@ export const useChallengesStore = defineStore('challenges', () => {
     checkIn,
     undoCheckIn,
     abandonChallenge,
+    generateInviteCode,
+    revokeInviteCode,
+    joinByCode,
+    getLeaderboard,
+    leaveChallenge,
   }
 })

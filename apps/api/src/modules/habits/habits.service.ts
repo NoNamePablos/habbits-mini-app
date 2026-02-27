@@ -219,7 +219,7 @@ export class HabitsService {
     };
   }
 
-  async uncomplete(id: number, userId: number, date: string): Promise<Habit> {
+  async uncomplete(id: number, userId: number, date: string, timezone: string = 'UTC'): Promise<Habit> {
     const habit = await this.findOneOrFail(id, userId);
 
     const completion = await this.completionsRepo.findOne({
@@ -232,7 +232,7 @@ export class HabitsService {
     await this.completionsRepo.remove(completion);
 
     // Recalculate streak
-    const recalculated = await this.recalculateStreak(id);
+    const recalculated = await this.recalculateStreak(id, timezone);
     habit.currentStreak = recalculated;
     return this.habitsRepo.save(habit);
   }
@@ -276,7 +276,7 @@ export class HabitsService {
     return { newStreak: 1, freezeUsed: false };
   }
 
-  private async recalculateStreak(habitId: number): Promise<number> {
+  private async recalculateStreak(habitId: number, timezone: string = 'UTC'): Promise<number> {
     const completions = await this.completionsRepo.find({
       where: { habitId },
       order: { completedDate: 'DESC' },
@@ -286,7 +286,7 @@ export class HabitsService {
     if (completions.length === 0) return 0;
 
     let streak = 0;
-    let expectedDate = this.getTodayDate();
+    let expectedDate = this.getTodayDate(timezone);
 
     for (const completion of completions) {
       if (completion.completedDate === expectedDate) {

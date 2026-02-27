@@ -129,6 +129,6 @@ export class HabitsController {
     @Param('id', ParseIntPipe) id: number,
     @Param('date') date: string,
   ): Promise<Habit> {
-    return this.habitsService.uncomplete(id, user.id, date);
+    return this.habitsService.uncomplete(id, user.id, date, user.timezone);
   }
 }

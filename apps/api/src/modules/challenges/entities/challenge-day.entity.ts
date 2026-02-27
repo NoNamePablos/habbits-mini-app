@@ -16,7 +16,7 @@ export enum ChallengeDayStatus {
 }
 
 @Entity('challenge_days')
-@Unique(['challengeId', 'dayDate'])
+@Unique(['challengeId', 'userId', 'dayDate'])
 export class ChallengeDay extends BaseEntity {
   @Column()
   @Index()

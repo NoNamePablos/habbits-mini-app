@@ -39,4 +39,7 @@ export class User extends BaseEntity {
 
   @Column({ default: 'UTC', length: 50 })
   timezone: string;
+
+  @Column({ type: 'varchar', length: 16, unique: true, nullable: true, default: null })
+  friendInviteCode: string | null;
 }

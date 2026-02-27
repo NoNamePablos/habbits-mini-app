@@ -34,8 +34,22 @@ export interface Challenge {
   currentStreak: number
   bestStreak: number
   completedAt: string | null
+  inviteCode: string | null
   createdAt: string
   updatedAt: string
+}
+
+export interface ChallengeParticipant {
+  id: number
+  challengeId: number
+  userId: number
+  status: ChallengeStatus
+  completedDays: number
+  missedDays: number
+  currentStreak: number
+  bestStreak: number
+  completedAt: string | null
+  createdAt: string
 }
 
 export interface ChallengeDay {
@@ -51,6 +65,8 @@ export interface ChallengeDay {
 
 export interface ChallengeListItem extends Challenge {
   todayCheckedIn: boolean
+  isCreator: boolean
+  participantStatus: ChallengeStatus | null
 }
 
 export interface ChallengesListResponse {
@@ -61,6 +77,25 @@ export interface ChallengeDetailResponse {
   challenge: Challenge
   days: ChallengeDay[]
   todayCheckedIn: boolean
+  isCreator: boolean
+  participant: ChallengeParticipant | null
+}
+
+export interface LeaderboardEntry {
+  userId: number
+  username: string | null
+  firstName: string | null
+  photoUrl: string | null
+  level: number
+  completedDays: number
+  currentStreak: number
+  bestStreak: number
+  status: ChallengeStatus
+  isCreator: boolean
+}
+
+export interface ChallengeInviteResponse {
+  inviteCode: string
 }
 
 export interface CheckInResponse {

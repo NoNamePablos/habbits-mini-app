@@ -2,7 +2,6 @@
 import { useStorage } from '@vueuse/core'
 import type { CreateHabitPayload, TimeOfDay } from '~/types/habit'
 import type { CreateGoalPayload, Goal } from '~/types/goal'
-import type { DaySummary } from '~/types/stats'
 import { Plus, Sparkles } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
@@ -13,10 +12,7 @@ const goalsStore = useGoalsStore()
 const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
 const { t } = useI18n()
-const { startsMonday } = useWeekStart()
 const { focusMode, currentTimeOfDay } = useFocusMode()
-
-const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
 const bestCurrentStreak = computed<number>(() => {
   const habits = toValue(habitsStore.habits)
@@ -33,45 +29,6 @@ const progressLabel = computed<string>(() => {
   if (pct < 75) return t('home.progressLabel.midway')
   if (pct < 100) return t('home.progressLabel.almost', { count: remaining })
   return t('home.progressLabel.perfect')
-})
-
-interface WeekDay extends DaySummary {
-  label: string
-  isToday: boolean
-  isFuture: boolean
-}
-
-const weekDays = computed<WeekDay[]>(() => {
-  const days = statsStore.summary?.weeklyDays
-  if (!days || days.length === 0) return []
-
-  const todayStr = new Date().toISOString().split('T')[0]
-
-  let orderedDays = [...days]
-  if (toValue(startsMonday)) {
-    orderedDays = orderedDays.sort((a, b) => {
-      const dayA = new Date(a.date + 'T00:00:00').getDay()
-      const dayB = new Date(b.date + 'T00:00:00').getDay()
-      return (dayA === 0 ? 7 : dayA) - (dayB === 0 ? 7 : dayB)
-    })
-  } else {
-    orderedDays = orderedDays.sort((a, b) => {
-      const dayA = new Date(a.date + 'T00:00:00').getDay()
-      const dayB = new Date(b.date + 'T00:00:00').getDay()
-      return dayA - dayB
-    })
-  }
-
-  return orderedDays.map((d: DaySummary) => {
-    const date = new Date(d.date + 'T00:00:00')
-    const dayIndex = date.getDay()
-    return {
-      ...d,
-      label: t(`days.${DAY_KEYS[dayIndex]}`),
-      isToday: d.date === todayStr,
-      isFuture: d.date > todayStr,
-    }
-  })
 })
 
 // Habit filter
@@ -272,10 +229,7 @@ const onGoalCompletedClose = (): void => {
       />
 
       <!-- Block 2: This Week -->
-      <HomeThisWeek
-        v-if="weekDays.length > 0"
-        :days="weekDays"
-      />
+      <HomeThisWeek />
 
       <!-- Goal card -->
       <GoalsGoalCard
