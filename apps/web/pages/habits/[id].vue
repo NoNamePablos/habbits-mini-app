@@ -8,9 +8,10 @@ import { ArrowLeft, Check, Flame, Trophy, Pencil, Trash2, BarChart3, Calendar } 
 const route = useRoute()
 const habitsStore = useHabitsStore()
 const statsStore = useStatsStore()
-const { hapticNotification, hapticImpact } = useTelegram()
+const { hapticNotification, hapticImpact, showMainButton, hideMainButton } = useTelegram()
 const { resolveIcon } = useHabitIcon()
 const { showSuccess } = useErrorHandler()
+const { t } = useI18n()
 
 const habit = ref<Habit | null>(null)
 const habitStats = ref<HabitStats | null>(null)
@@ -73,11 +74,26 @@ const onDelete = async (): Promise<void> => {
   }
 }
 
+watch(isCompleted, (completed) => {
+  if (completed) {
+    hideMainButton()
+  } else {
+    showMainButton(t('habit.markCompleted'), () => { onToggle() })
+  }
+})
+
 onMounted(async () => {
   if (toValue(habitsStore.habits).length === 0) {
     await habitsStore.fetchHabits()
   }
   await Promise.all([fetchHabit(), fetchStats()])
+  if (!toValue(isCompleted)) {
+    showMainButton(t('habit.markCompleted'), () => { onToggle() })
+  }
+})
+
+onUnmounted(() => {
+  hideMainButton()
 })
 </script>
 

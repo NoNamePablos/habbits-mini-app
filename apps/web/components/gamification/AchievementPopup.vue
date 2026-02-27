@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Award } from 'lucide-vue-next'
+import { Award, Share2 } from 'lucide-vue-next'
 
 interface UnlockedInfo {
   name: string
@@ -16,10 +16,18 @@ interface Emits {
   (e: 'close'): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const { resolveIcon } = useHabitIcon()
+const { tg } = useTelegram()
+const { t } = useI18n()
+
+const onShare = (): void => {
+  if (!props.achievement) return
+  const text = t('gamification.shareText', { name: props.achievement.name })
+  tg?.openLink(`https://t.me/share/url?text=${encodeURIComponent(text)}`)
+}
 </script>
 
 <template>
@@ -41,9 +49,19 @@ const { resolveIcon } = useHabitIcon()
         <Badge class="text-sm bg-gradient-gold text-white border-0">
           +{{ achievement.xpReward }} XP
         </Badge>
-        <Button class="w-full bg-gradient-primary border-0 text-white hover:opacity-90" @click="$emit('close')">
-          {{ $t('gamification.achievementButton') }}
-        </Button>
+        <div class="flex gap-2 w-full">
+          <Button
+            variant="outline"
+            class="flex-1 gap-2"
+            @click="onShare"
+          >
+            <Share2 class="h-4 w-4" />
+            {{ $t('gamification.shareButton') }}
+          </Button>
+          <Button class="flex-1 bg-gradient-primary border-0 text-white hover:opacity-90" @click="$emit('close')">
+            {{ $t('gamification.achievementButton') }}
+          </Button>
+        </div>
       </div>
     </SheetContent>
   </Sheet>

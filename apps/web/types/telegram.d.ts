@@ -61,6 +61,8 @@ export interface TelegramWebApp {
   SettingsButton: TelegramButton
   onEvent: (eventType: string, callback: () => void) => void
   offEvent: (eventType: string, callback: () => void) => void
+  openLink: (url: string) => void
+  setHeaderColor: (color: string) => void
 }
 
 declare global {

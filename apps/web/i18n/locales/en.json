@@ -68,7 +68,10 @@
     "recordWeekly": "Weekly record",
     "topHabits": "Top Habits",
     "needAttention": "Needs Work",
-    "noStreak": "No streak"
+    "noStreak": "No streak",
+    "heatmapHint": "Each square is one day of activity",
+    "goalCompleted": "Completed",
+    "goalFailed": "Not reached"
   },
   "achievements": {
     "title": "Achievements",
@@ -82,7 +85,8 @@
       "social": "Social",
       "time": "Time"
     },
-    "categoryEmpty": "No achievements in this category"
+    "categoryEmpty": "No achievements in this category",
+    "history": "Recent"
   },
   "habit": {
     "back": "Back",
@@ -257,7 +261,9 @@
     "levelUpMessage": "Keep it up! Keep completing your habits",
     "levelUpButton": "Awesome!",
     "achievementUnlocked": "Achievement unlocked!",
-    "achievementButton": "Great!"
+    "achievementButton": "Great!",
+    "shareButton": "Share",
+    "shareText": "🏆 Unlocked the «{name}» achievement in Habits!"
   },
   "xpBar": {
     "level": "Lv. {level}"

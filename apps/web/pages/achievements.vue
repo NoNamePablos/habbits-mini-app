@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { Trophy } from 'lucide-vue-next'
+import { Trophy, Clock } from 'lucide-vue-next'
 import type { AchievementCategory } from '~/types/gamification'
 
 const gamificationStore = useGamificationStore()
+const { resolveIcon } = useHabitIcon()
+const { locale } = useI18n()
 
 type SortMode = 'default' | 'closest'
 const activeTab = ref<AchievementCategory | 'all'>('all')
@@ -35,6 +37,18 @@ const displayedAchievements = computed(() => {
   }
   return list
 })
+
+const unlockedHistory = computed(() =>
+  gamificationStore.achievements
+    .filter((a) => a.unlocked && a.unlockedAt)
+    .sort((a, b) => new Date(b.unlockedAt!).getTime() - new Date(a.unlockedAt!).getTime())
+    .slice(0, 10),
+)
+
+const formatUnlockedDate = (dateStr: string | null): string => {
+  if (!dateStr) return ''
+  return new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }).format(new Date(dateStr))
+}
 </script>
 
 <template>
@@ -69,6 +83,30 @@ const displayedAchievements = computed(() => {
         <Trophy class="h-12 w-12 text-muted-foreground" />
         <p class="text-sm text-muted-foreground">{{ $t('achievements.emptyMessage') }}</p>
       </div>
+
+      <template v-if="unlockedHistory.length > 0">
+        <div class="flex items-center gap-2 pt-2">
+          <Clock class="h-4 w-4 text-muted-foreground" />
+          <h2 class="text-sm font-semibold">{{ $t('achievements.history') }}</h2>
+        </div>
+        <Card class="glass">
+          <CardContent class="pt-4 pb-4 space-y-3">
+            <div v-for="ach in unlockedHistory" :key="ach.id" class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <component
+                  :is="resolveIcon(ach.icon)"
+                  class="h-4 w-4 text-primary"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium truncate">{{ ach.name }}</div>
+                <div class="text-[10px] text-muted-foreground">{{ formatUnlockedDate(ach.unlockedAt) }}</div>
+              </div>
+              <Badge variant="secondary" class="text-[10px] shrink-0">+{{ ach.xpReward }} XP</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </template>
     </template>
   </div>
 </template>
