@@ -12,7 +12,7 @@ const goalsStore = useGoalsStore()
 const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
 const { t } = useI18n()
-const { focusMode, currentTimeOfDay } = useFocusMode()
+const { focusMode, setFocusMode, currentTimeOfDay } = useFocusMode()
 
 const bestCurrentStreak = computed<number>(() => {
   const habits = toValue(habitsStore.habits)
@@ -245,7 +245,7 @@ const onGoalCompletedClose = (): void => {
           :filter="habitFilter"
           :focus-mode="focusMode"
           @update:filter="habitFilter = $event"
-          @toggle:focus-mode="focusMode = !focusMode"
+          @toggle:focus-mode="void setFocusMode(!focusMode)"
         />
 
         <HabitsHabitList

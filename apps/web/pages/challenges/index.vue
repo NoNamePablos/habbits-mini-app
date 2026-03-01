@@ -28,7 +28,7 @@ onMounted(async () => {
 const onOnboardingClose = (dontShowAgain: boolean): void => {
   showOnboarding.value = false
   if (dontShowAgain) {
-    markAsSeen()
+    void markAsSeen()
   }
 }
 

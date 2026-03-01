@@ -1,6 +1,13 @@
 import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 
+export interface UserSettings {
+  seenFlags?: string[];
+  weekStartsMonday?: boolean;
+  focusMode?: boolean;
+  theme?: 'light' | 'dark' | 'auto';
+}
+
 @Entity('users')
 export class User extends BaseEntity {
   @Column({ type: 'bigint', unique: true })
@@ -40,6 +47,15 @@ export class User extends BaseEntity {
   @Column({ default: 'UTC', length: 50 })
   timezone: string;
 
-  @Column({ type: 'varchar', length: 16, unique: true, nullable: true, default: null })
+  @Column({
+    type: 'varchar',
+    length: 16,
+    unique: true,
+    nullable: true,
+    default: null,
+  })
   friendInviteCode: string | null;
+
+  @Column({ type: 'json', nullable: true, default: null })
+  settings: UserSettings | null;
 }

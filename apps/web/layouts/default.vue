@@ -96,7 +96,7 @@ const onDailyBonusClose = (): void => {
 }
 
 const onWeeklySummaryClose = (): void => {
-  markWeeklySummarySeen()
+  void markWeeklySummarySeen()
   statsStore.weeklySummary = null
 }
 </script>

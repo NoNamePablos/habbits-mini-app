@@ -4,7 +4,7 @@ const STORAGE_KEY = 'theme-preference'
 
 interface UseThemePreferenceReturn {
   preference: Ref<ThemePreference>
-  setPreference: (value: ThemePreference) => void
+  setPreference: (value: ThemePreference) => Promise<void>
 }
 
 const applyTheme = (pref: ThemePreference): void => {
@@ -39,31 +39,40 @@ const applyTheme = (pref: ThemePreference): void => {
 }
 
 export const useThemePreference = (): UseThemePreferenceReturn => {
+  const authStore = useAuthStore()
   const preference = ref<ThemePreference>('auto')
 
-  onMounted(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null
-      if (stored === 'light' || stored === 'dark') {
-        preference.value = stored
-      }
-    } catch {
-      // localStorage unavailable
+  // Fast-path: read localStorage immediately
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null
+    if (stored === 'light' || stored === 'dark') {
+      preference.value = stored
     }
-  })
+  } catch { /* noop */ }
 
-  const setPreference = (value: ThemePreference): void => {
+  // Sync from backend on auth load
+  watch(
+    () => authStore.user?.settings?.theme,
+    (val) => {
+      if (!val) return
+      preference.value = val
+      try {
+        if (val === 'auto') { localStorage.removeItem(STORAGE_KEY) }
+        else { localStorage.setItem(STORAGE_KEY, val) }
+      } catch { /* noop */ }
+      applyTheme(val)
+    },
+    { immediate: true },
+  )
+
+  const setPreference = async (value: ThemePreference): Promise<void> => {
     preference.value = value
     try {
-      if (value === 'auto') {
-        localStorage.removeItem(STORAGE_KEY)
-      } else {
-        localStorage.setItem(STORAGE_KEY, value)
-      }
-    } catch {
-      // localStorage unavailable
-    }
+      if (value === 'auto') { localStorage.removeItem(STORAGE_KEY) }
+      else { localStorage.setItem(STORAGE_KEY, value) }
+    } catch { /* noop */ }
     applyTheme(value)
+    await authStore.updateSettings({ theme: value })
   }
 
   return { preference, setPreference }

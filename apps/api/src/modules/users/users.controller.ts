@@ -10,6 +10,7 @@ import { UsersService } from './users.service';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
 import { TelegramUser } from '../../core/telegram/telegram-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserSettingsDto } from './dto/update-user-settings.dto';
 import { User } from './entities/user.entity';
 
 @Controller('users')
@@ -28,6 +29,14 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(user.id, dto);
+  }
+
+  @Patch('me/settings')
+  async updateSettings(
+    @TelegramUser() user: User,
+    @Body() dto: UpdateUserSettingsDto,
+  ): Promise<User> {
+    return this.usersService.updateSettings(user.id, dto);
   }
 
   @Delete('me')

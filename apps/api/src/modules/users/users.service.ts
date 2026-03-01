@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserSettings } from './entities/user.entity';
 
 export interface TelegramUserData {
   id: number;
@@ -19,7 +19,9 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findOrCreateFromTelegram(tgUser: TelegramUserData): Promise<User> {
+  async findOrCreateFromTelegram(
+    tgUser: TelegramUserData,
+  ): Promise<{ user: User; isNewUser: boolean }> {
     let user = await this.usersRepository.findOne({
       where: { telegramId: tgUser.id },
     });
@@ -30,7 +32,7 @@ export class UsersService {
       user.username = tgUser.username ?? user.username;
       user.photoUrl = tgUser.photo_url ?? user.photoUrl;
       user.languageCode = tgUser.language_code ?? user.languageCode;
-      return this.usersRepository.save(user);
+      return { user: await this.usersRepository.save(user), isNewUser: false };
     }
 
     try {
@@ -43,17 +45,38 @@ export class UsersService {
         languageCode: tgUser.language_code,
       });
 
-      return await this.usersRepository.save(user);
+      return { user: await this.usersRepository.save(user), isNewUser: true };
     } catch (error: unknown) {
       const dbError = error as { code?: string };
       if (dbError.code === 'ER_DUP_ENTRY') {
         const existing = await this.usersRepository.findOne({
           where: { telegramId: tgUser.id },
         });
-        if (existing) return existing;
+        if (existing) return { user: existing, isNewUser: false };
       }
       throw error;
     }
+  }
+
+  async updateSettings(
+    userId: number,
+    patch: Partial<UserSettings>,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOneByOrFail({ id: userId });
+    const current = user.settings ?? {};
+
+    // seenFlags are unioned (never removed), other fields are overwritten
+    const mergedSeenFlags = Array.from(
+      new Set([...(current.seenFlags ?? []), ...(patch.seenFlags ?? [])]),
+    );
+
+    user.settings = {
+      ...current,
+      ...patch,
+      seenFlags: mergedSeenFlags,
+    };
+
+    return this.usersRepository.save(user);
   }
 
   async findByTelegramId(telegramId: number): Promise<User | null> {

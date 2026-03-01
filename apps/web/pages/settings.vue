@@ -22,7 +22,7 @@ const authStore = useAuthStore()
 const { hapticNotification, tg } = useTelegram()
 const { preference: themePref, setPreference: setThemePref } = useThemePreference()
 const config = useRuntimeConfig()
-const { startsMonday } = useWeekStart()
+const { startsMonday, setStartsMonday } = useWeekStart()
 
 const currentLanguage = computed<{ flag: string; label: string }>(() =>
   locale.value === 'ru'
@@ -170,7 +170,7 @@ const goBack = (): void => {
       </CardContent>
     </Card>
 
-    <Card class="glass" @click="startsMonday = !startsMonday">
+    <Card class="glass" @click="void setStartsMonday(!startsMonday)">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center justify-between cursor-pointer">
           <div class="flex items-center gap-3">
@@ -197,7 +197,7 @@ const goBack = (): void => {
             :variant="themePref === option.value ? 'default' : 'outline'"
             size="sm"
             class="flex-1"
-            @click="setThemePref(option.value)"
+            @click="void setThemePref(option.value)"
           >
             {{ $t(option.labelKey) }}
           </Button>

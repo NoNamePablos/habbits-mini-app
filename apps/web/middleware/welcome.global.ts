@@ -1,18 +1,31 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const STORAGE_KEY = 'onboarding_seen_welcome'
+// Redirects new users to /welcome on first launch.
+// Source of truth: authStore.isNewUser (from backend, zero-cost — already computed in findOrCreateFromTelegram)
+// Fast-path cache: localStorage 'onboarding_seen_welcome' avoids flicker while auth loads
 
-  let hasSeenWelcome = false
-  try {
-    hasSeenWelcome = localStorage.getItem(STORAGE_KEY) === 'true'
-  } catch {
-    hasSeenWelcome = false
+export default defineNuxtRouteMiddleware(async (to) => {
+  // Fast-path: if localStorage says "already seen", skip redirect immediately
+  let lsSeen = false
+  try { lsSeen = localStorage.getItem('onboarding_seen_welcome') === 'true' } catch { /* noop */ }
+
+  if (lsSeen && to.path === '/welcome') return navigateTo('/')
+  if (lsSeen) return
+
+  // Wait for auth to complete (authenticate() is called in default.vue onMounted)
+  // Middleware runs before auth for cold starts — in that case we rely on localStorage only.
+  // If localStorage was cleared but user isn't new, the welcome page will redirect via its own logic.
+  const authStore = useAuthStore()
+
+  // If auth already completed, use backend result
+  if (authStore.isAuthenticated) {
+    const hasSeenWelcome = authStore.user?.settings?.seenFlags?.includes('welcome') ?? false
+    if (!hasSeenWelcome && to.path !== '/welcome' && to.path !== '/onboarding') {
+      return navigateTo('/welcome')
+    }
+    if (hasSeenWelcome && to.path === '/welcome') {
+      return navigateTo('/')
+    }
+    return
   }
 
-  if (!hasSeenWelcome && to.path !== '/welcome' && to.path !== '/onboarding') {
-    return navigateTo('/welcome')
-  }
-
-  if (hasSeenWelcome && to.path === '/welcome') {
-    return navigateTo('/')
-  }
+  // Auth not yet loaded — allow navigation; welcome.vue will handle the redirect after auth
 })

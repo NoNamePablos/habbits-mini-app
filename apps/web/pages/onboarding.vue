@@ -62,7 +62,7 @@ const toggleTemplate = (index: number): void => {
 }
 
 const finishOnboarding = (): void => {
-  markAsSeen()
+  void markAsSeen()
   window.location.href = '/'
 }
 

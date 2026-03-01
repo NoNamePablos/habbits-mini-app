@@ -15,6 +15,7 @@ import {
 interface RequestWithUser {
   headers: Record<string, string | undefined>;
   user?: unknown;
+  isNewUser?: boolean;
 }
 
 @Injectable()
@@ -40,8 +41,10 @@ export class TelegramAuthGuard implements CanActivate {
     }
 
     const tgUser = this.validateInitData(initData);
-    const user = await this.usersService.findOrCreateFromTelegram(tgUser);
+    const { user, isNewUser } =
+      await this.usersService.findOrCreateFromTelegram(tgUser);
     request.user = user;
+    request.isNewUser = isNewUser;
     return true;
   }
 

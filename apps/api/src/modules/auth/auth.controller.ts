@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThanOrEqual } from 'typeorm';
 import { TelegramAuthGuard } from '../../core/telegram/telegram-auth.guard';
@@ -9,9 +9,14 @@ import { XpTransaction } from '../gamification/entities/xp-transaction.entity';
 
 const DAILY_LOGIN_XP = 5;
 
+interface RequestWithMeta {
+  isNewUser?: boolean;
+}
+
 interface AuthResponse {
   user: User;
   message: string;
+  isNewUser: boolean;
   dailyLoginXp: number | null;
   weekLoginDays: string[];
 }
@@ -28,8 +33,13 @@ export class AuthController {
 
   @Post('telegram')
   @UseGuards(TelegramAuthGuard)
-  async authenticate(@TelegramUser() user: User): Promise<AuthResponse> {
-    const today = new Intl.DateTimeFormat('en-CA', { timeZone: user.timezone ?? 'UTC' }).format(new Date());
+  async authenticate(
+    @TelegramUser() user: User,
+    @Req() req: RequestWithMeta,
+  ): Promise<AuthResponse> {
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: user.timezone ?? 'UTC',
+    }).format(new Date());
     let dailyLoginXp: number | null = null;
 
     if (user.lastLoginDate !== today) {
@@ -48,6 +58,7 @@ export class AuthController {
     return {
       user,
       message: 'Authenticated successfully',
+      isNewUser: req.isNewUser ?? false,
       dailyLoginXp,
       weekLoginDays,
     };

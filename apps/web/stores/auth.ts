@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import type { UserProfile, AuthResponse } from '~/types/user'
+import type { UserProfile, UserSettings, AuthResponse } from '~/types/user'
 import { DEFAULT_DISPLAY_NAME } from '~/constants'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserProfile | null>(null)
   const isAuthenticated = ref<boolean>(false)
   const isLoading = ref<boolean>(false)
+  const isNewUser = ref<boolean>(false)
   const dailyLoginXp = ref<number | null>(null)
   const weekLoginDays = ref<string[]>([])
 
@@ -28,6 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.post<AuthResponse>('/auth/telegram')
       user.value = response.user
       isAuthenticated.value = true
+      isNewUser.value = response.isNewUser
       dailyLoginXp.value = response.dailyLoginXp
       weekLoginDays.value = response.weekLoginDays
 
@@ -39,6 +41,17 @@ export const useAuthStore = defineStore('auth', () => {
       handleError(error, 'errors.authFailed')
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const updateSettings = async (patch: Partial<UserSettings>): Promise<void> => {
+    try {
+      const updated = await api.patch<UserProfile>('/users/me/settings', patch)
+      if (user.value) {
+        user.value = { ...user.value, settings: updated.settings }
+      }
+    } catch (error) {
+      handleError(error, 'errors.saveFailed')
     }
   }
 
@@ -62,10 +75,12 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isAuthenticated,
     isLoading,
+    isNewUser,
     displayName,
     dailyLoginXp,
     weekLoginDays,
     authenticate,
+    updateSettings,
     clearDailyBonus,
     deleteAccount,
   }

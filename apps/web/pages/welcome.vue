@@ -32,7 +32,7 @@ const steps = [
 ] as const
 
 const onStart = (): void => {
-  markAsSeen()
+  void markAsSeen()
   navigateTo('/onboarding', { replace: true })
 }
 </script>
