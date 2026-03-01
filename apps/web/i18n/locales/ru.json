@@ -110,7 +110,8 @@
     "noteTitle": "Как прошло?",
     "notePlaceholder": "Добавь заметку (необязательно)",
     "noteSkip": "Пропустить",
-    "noteSubmit": "Отметить"
+    "noteSubmit": "Отметить",
+    "notesHistory": "История заметок"
   },
   "habitForm": {
     "createTitle": "Новая привычка",

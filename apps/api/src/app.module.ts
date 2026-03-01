@@ -8,10 +8,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HabitsModule } from './modules/habits/habits.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
-import { AchievementsModule } from './modules/achievements/achievements.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
-import { GoalsModule } from './modules/goals/goals.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { FriendsModule } from './modules/friends/friends.module';
 
@@ -41,10 +39,8 @@ import { FriendsModule } from './modules/friends/friends.module';
     AuthModule,
     HabitsModule,
     GamificationModule,
-    AchievementsModule,
     StatsModule,
     ChallengesModule,
-    GoalsModule,
     NotificationsModule,
     FriendsModule,
   ],

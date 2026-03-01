@@ -18,8 +18,6 @@ import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { CheckInChallengeDto } from './dto/check-in-challenge.dto';
 import { GamificationService } from '../gamification/gamification.service';
-import { AchievementsService } from '../achievements/achievements.service';
-import { Achievement } from '../achievements/entities/achievement.entity';
 
 const XP_PER_CHECKIN = 15;
 const COMPLETION_XP: Record<number, number> = {
@@ -31,11 +29,6 @@ const COMPLETION_XP: Record<number, number> = {
   90: 750,
 };
 
-interface UnlockedAchievementInfo {
-  achievement: Achievement;
-  xpAwarded: number;
-}
-
 interface CheckInResult {
   day: ChallengeDay;
   challenge: Challenge;
@@ -45,7 +38,6 @@ interface CheckInResult {
   leveledUp: boolean;
   newLevel: number;
   challengeCompleted: boolean;
-  unlockedAchievements: UnlockedAchievementInfo[];
 }
 
 export interface ChallengeDetailResult {
@@ -82,7 +74,6 @@ export class ChallengesService {
     private readonly usersRepo: Repository<User>,
     private readonly dataSource: DataSource,
     private readonly gamificationService: GamificationService,
-    private readonly achievementsService: AchievementsService,
   ) {}
 
   async findAllByUser(
@@ -207,9 +198,6 @@ export class ChallengesService {
       endDate,
     });
     const saved = await this.challengesRepo.save(challenge);
-
-    await this.achievementsService.checkAfterChallengeCreated(userId);
-
     return saved;
   }
 
@@ -496,16 +484,6 @@ export class ChallengesService {
     const totalXp = xpEarned + streakBonusXp + completionBonusXp;
     const xpResult = await this.gamificationService.awardXp(userId, totalXp, 'challenge', challenge.id);
 
-    let unlockedAchievements: UnlockedAchievementInfo[] = [];
-    if (challengeCompleted) {
-      unlockedAchievements = await this.achievementsService.checkAfterChallengeCompletion({
-        userId,
-        challengeId: challenge.id,
-        durationDays: challenge.durationDays,
-        missedDays: challenge.missedDays,
-      });
-    }
-
     return {
       day,
       challenge,
@@ -515,7 +493,6 @@ export class ChallengesService {
       leveledUp: xpResult.leveledUp,
       newLevel: xpResult.newLevel,
       challengeCompleted,
-      unlockedAchievements,
     };
   }
 
@@ -577,7 +554,6 @@ export class ChallengesService {
       leveledUp: xpResult.leveledUp,
       newLevel: xpResult.newLevel,
       challengeCompleted: false,
-      unlockedAchievements: [],
     };
   }
 

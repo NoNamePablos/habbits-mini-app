@@ -7,7 +7,12 @@ interface UseErrorHandlerReturn {
 }
 
 export const useErrorHandler = (): UseErrorHandlerReturn => {
-  const { t } = useI18n()
+  const nuxtApp = useNuxtApp()
+
+  const t = (key: string, params?: Record<string, unknown>): string => {
+    const i18n = nuxtApp.$i18n as { t: (key: string, params?: Record<string, unknown>) => string }
+    return i18n.t(key, params)
+  }
 
   const extractMessage = (error: unknown): string | null => {
     if (error instanceof Error) return error.message
@@ -22,11 +27,11 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
   }
 
   const showSuccess = (messageKey: string, params?: Record<string, unknown>): void => {
-    toast.success(t(messageKey, params ?? {}))
+    toast.success(t(messageKey, params))
   }
 
   const showInfo = (messageKey: string, params?: Record<string, unknown>): void => {
-    toast.info(t(messageKey, params ?? {}))
+    toast.info(t(messageKey, params))
   }
 
   return { handleError, showSuccess, showInfo }

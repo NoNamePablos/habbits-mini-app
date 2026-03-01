@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { User, Zap, Flame, Trophy, Calendar, Target, Award, ChevronRight, Snowflake, TrendingUp, TrendingDown, CheckCircle, XCircle } from 'lucide-vue-next'
+import { User, Zap, Flame, Trophy, Calendar, Target, Snowflake, TrendingUp, TrendingDown } from 'lucide-vue-next'
 import { MAX_STREAK_FREEZES } from '~/constants'
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
@@ -8,8 +8,7 @@ const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
 const habitsStore = useHabitsStore()
-const goalsStore = useGoalsStore()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const isLoading = ref<boolean>(true)
 
@@ -17,10 +16,8 @@ onMounted(async () => {
   isLoading.value = true
   await Promise.all([
     gamificationStore.fetchProfile(),
-    gamificationStore.fetchAchievements(),
     statsStore.fetchSummary(),
     statsStore.fetchHeatmap(),
-    goalsStore.fetchHistory(),
     habitsStore.fetchHabits(),
   ])
   isLoading.value = false
@@ -148,24 +145,6 @@ const strugglingHabits = computed(() =>
     .slice(0, 3),
 )
 
-const goalsHistoryByMonth = computed(() => {
-  const goals = toValue(goalsStore.history).filter((g) => g.status !== 'active')
-  const groups: Record<string, typeof goals> = {}
-  for (const goal of goals) {
-    const dateStr = goal.completedAt ?? goal.deadline
-    const key = dateStr.slice(0, 7)
-    if (!groups[key]) groups[key] = []
-    groups[key].push(goal)
-  }
-  return Object.entries(groups)
-    .sort(([a], [b]) => b.localeCompare(a))
-    .slice(0, 3)
-    .map(([month, items]) => {
-      const [year, mon] = month.split('-')
-      const label = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(new Date(Number(year), Number(mon) - 1))
-      return { month, label, items }
-    })
-})
 </script>
 
 <template>
@@ -333,61 +312,7 @@ const goalsHistoryByMonth = computed(() => {
       </CardContent>
     </Card>
 
-    <Card v-if="goalsStore.history.length > 0" class="glass stagger-item" :style="{ '--stagger': 5 }">
-      <CardContent class="pt-4 pb-4">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <Target class="h-4 w-4 text-primary" />
-            <span class="text-sm font-semibold">{{ $t('goals.history') }}</span>
-          </div>
-          <Badge variant="secondary" class="text-xs">
-            {{ $t('goals.historyCount', { count: goalsStore.completedCount }) }}
-          </Badge>
-        </div>
-        <div class="space-y-3">
-          <div v-for="group in goalsHistoryByMonth" :key="group.month">
-            <div class="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
-              {{ group.label }}
-            </div>
-            <div class="space-y-1.5">
-              <div
-                v-for="goal in group.items"
-                :key="goal.id"
-                class="flex items-center gap-2"
-              >
-                <CheckCircle v-if="goal.status === 'completed'" class="h-3.5 w-3.5 text-green-500 shrink-0" />
-                <XCircle v-else class="h-3.5 w-3.5 text-red-400 shrink-0" />
-                <span class="text-xs flex-1 truncate">
-                  {{ $t(`goals.typeDescription.${goal.type}`, { target: goal.targetValue }) }}
-                </span>
-                <span class="text-[10px] text-muted-foreground shrink-0">
-                  {{ goal.status === 'completed' ? $t('profile.goalCompleted') : $t('profile.goalFailed') }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card class="glass stagger-item" :style="{ '--stagger': 6 }">
-      <CardContent class="pt-4 pb-4">
-        <NuxtLink to="/achievements" class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <Award class="h-4 w-4 text-yellow-500 icon-glow" />
-            <span class="text-sm font-medium">{{ $t('profile.achievements') }}</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <Badge variant="secondary" class="text-xs">
-              {{ gamificationStore.unlockedCount }}/{{ gamificationStore.totalCount }}
-            </Badge>
-            <ChevronRight class="h-4 w-4 text-muted-foreground" />
-          </div>
-        </NuxtLink>
-      </CardContent>
-    </Card>
-
-    <Card v-if="statsStore.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 7 }">
+    <Card v-if="statsStore.heatmap.length > 0" class="glass stagger-item" :style="{ '--stagger': 5 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Calendar class="h-3.5 w-3.5" />
@@ -400,7 +325,7 @@ const goalsHistoryByMonth = computed(() => {
       </CardContent>
     </Card>
 
-    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0" class="glass stagger-item" :style="{ '--stagger': 8 }">
+    <Card v-if="statsStore.summary && statsStore.summary.weeklyDays.length > 0" class="glass stagger-item" :style="{ '--stagger': 6 }">
       <CardContent class="pt-4 pb-4">
         <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
           <Trophy class="h-3.5 w-3.5" />

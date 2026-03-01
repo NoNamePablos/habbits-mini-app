@@ -10,8 +10,6 @@ const { showSuccess } = useErrorHandler()
 const showCreateForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
 const levelUpLevel = ref<number>(1)
-const showAchievementPopup = ref<boolean>(false)
-const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 
 const { hasSeenOnboarding, markAsSeen } = useOnboarding('challenges')
 const showOnboarding = ref<boolean>(false)
@@ -46,15 +44,6 @@ const onCheckIn = async (id: number): Promise<void> => {
     if (result.leveledUp) {
       levelUpLevel.value = result.newLevel
       showLevelUp.value = true
-    }
-    if (result.unlockedAchievements.length > 0) {
-      const first = result.unlockedAchievements[0]
-      pendingAchievement.value = {
-        name: first.achievement.name,
-        icon: first.achievement.icon,
-        xpReward: first.xpAwarded,
-      }
-      showAchievementPopup.value = true
     }
   }
 }
@@ -146,12 +135,6 @@ const onCreateChallenge = async (data: CreateChallengePayload): Promise<void> =>
         :show="showLevelUp"
         :level="levelUpLevel"
         @close="showLevelUp = false"
-      />
-
-      <GamificationAchievementPopup
-        :show="showAchievementPopup"
-        :achievement="pendingAchievement"
-        @close="showAchievementPopup = false"
       />
 
       <ChallengesOnboardingOverlay

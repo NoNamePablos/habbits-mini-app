@@ -110,7 +110,8 @@
     "noteTitle": "How did it go?",
     "notePlaceholder": "Add a note (optional)",
     "noteSkip": "Skip",
-    "noteSubmit": "Mark done"
+    "noteSubmit": "Mark done",
+    "notesHistory": "Notes history"
   },
   "habitForm": {
     "createTitle": "New habit",

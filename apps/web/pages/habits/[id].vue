@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import type { Habit, CreateHabitPayload } from '~/types/habit'
+import type { Habit, CreateHabitPayload, HabitCompletion } from '~/types/habit'
 import type { HabitStats } from '~/types/stats'
 import { TIME_OF_DAY_ICONS } from '~/types/habit'
-import { ArrowLeft, Check, Flame, Trophy, Pencil, Trash2, BarChart3, Calendar } from 'lucide-vue-next'
+import { ArrowLeft, Check, Flame, Trophy, Pencil, Trash2, BarChart3, Calendar, MessageSquare } from 'lucide-vue-next'
 
 const route = useRoute()
 const habitsStore = useHabitsStore()
@@ -11,10 +11,11 @@ const statsStore = useStatsStore()
 const { hapticNotification, hapticImpact, showMainButton, hideMainButton } = useTelegram()
 const { resolveIcon } = useHabitIcon()
 const { showSuccess } = useErrorHandler()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const habit = ref<Habit | null>(null)
 const habitStats = ref<HabitStats | null>(null)
+const completions = ref<HabitCompletion[]>([])
 const isLoading = ref<boolean>(true)
 const showEditForm = ref<boolean>(false)
 const showDeleteConfirm = ref<boolean>(false)
@@ -26,6 +27,10 @@ const habitId = computed<number>(() => Number(route.params.id))
 const habitIcon = computed<Component>(() => resolveIcon(toValue(habit)?.icon ?? null))
 
 const isCompleted = computed<boolean>(() => habitsStore.isCompleted(toValue(habitId)))
+
+const notedCompletions = computed<HabitCompletion[]>(() =>
+  toValue(completions).filter((c) => c.note),
+)
 
 const fetchHabit = async (): Promise<void> => {
   isLoading.value = true
@@ -43,15 +48,21 @@ const fetchStats = async (): Promise<void> => {
   habitStats.value = await statsStore.fetchHabitStats(toValue(habitId))
 }
 
+const fetchCompletions = async (): Promise<void> => {
+  const api = useApi()
+  completions.value = await api.get<HabitCompletion[]>(`/habits/${toValue(habitId)}/completions`)
+}
+
 const onToggle = async (): Promise<void> => {
   if (toValue(isCompleted)) {
     hapticImpact('light')
     const today = new Date().toISOString().split('T')[0]
     await habitsStore.uncompleteHabit(toValue(habitId), today)
-    await Promise.all([fetchHabit(), fetchStats()])
+    await Promise.all([fetchHabit(), fetchStats(), fetchCompletions()])
   } else {
     noteText.value = ''
     showNoteSheet.value = true
+    hideMainButton()
   }
 }
 
@@ -59,7 +70,7 @@ const onCompleteWithNote = async (note: string): Promise<void> => {
   showNoteSheet.value = false
   hapticNotification('success')
   await habitsStore.completeHabit(toValue(habitId), note || undefined)
-  await Promise.all([fetchHabit(), fetchStats()])
+  await Promise.all([fetchHabit(), fetchStats(), fetchCompletions()])
 }
 
 const onEdit = async (data: CreateHabitPayload): Promise<void> => {
@@ -80,6 +91,10 @@ const onDelete = async (): Promise<void> => {
   }
 }
 
+const formatNoteDate = (dateStr: string): string => {
+  return new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }).format(new Date(dateStr))
+}
+
 watch(isCompleted, (completed: boolean) => {
   if (completed) {
     hideMainButton()
@@ -88,11 +103,17 @@ watch(isCompleted, (completed: boolean) => {
   }
 })
 
+watch(showNoteSheet, (open: boolean) => {
+  if (!open && !toValue(isCompleted)) {
+    showMainButton(t('habit.markCompleted'), () => { onToggle() })
+  }
+})
+
 onMounted(async () => {
   if (toValue(habitsStore.habits).length === 0) {
     await habitsStore.fetchHabits()
   }
-  await Promise.all([fetchHabit(), fetchStats()])
+  await Promise.all([fetchHabit(), fetchStats(), fetchCompletions()])
   if (!toValue(isCompleted)) {
     showMainButton(t('habit.markCompleted'), () => { onToggle() })
   }
@@ -192,6 +213,32 @@ onUnmounted(() => {
             {{ $t('habit.activity3months') }}
           </div>
           <StatsCalendarHeatmap :data="habitStats.heatmap" />
+        </CardContent>
+      </Card>
+
+      <!-- Notes history -->
+      <Card v-if="notedCompletions.length > 0" class="glass stagger-item" :style="{ '--stagger': 5 }">
+        <CardContent class="pt-4 pb-4">
+          <div class="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+            <MessageSquare class="h-3.5 w-3.5" />
+            {{ $t('habit.notesHistory') }}
+          </div>
+          <div class="space-y-3">
+            <div
+              v-for="c in notedCompletions"
+              :key="c.id"
+              class="flex gap-3"
+            >
+              <div class="flex flex-col items-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                <div class="w-px flex-1 bg-border mt-1" />
+              </div>
+              <div class="pb-3 flex-1 min-w-0">
+                <div class="text-[11px] text-muted-foreground mb-0.5">{{ formatNoteDate(c.completedDate) }}</div>
+                <div class="text-sm">{{ c.note }}</div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

@@ -23,8 +23,6 @@ const showNoteField = ref<boolean>(false)
 const showEditForm = ref<boolean>(false)
 const showLevelUp = ref<boolean>(false)
 const levelUpLevel = ref<number>(1)
-const showAchievementPopup = ref<boolean>(false)
-const pendingAchievement = ref<{ name: string; icon: string | null; xpReward: number } | null>(null)
 const showChallengeComplete = ref<boolean>(false)
 const completionXpBonus = ref<number>(0)
 const showAbandonSheet = ref<boolean>(false)
@@ -144,15 +142,6 @@ const onCheckIn = async (): Promise<void> => {
       showLevelUp.value = true
     }
 
-    if (result.unlockedAchievements.length > 0) {
-      const first = result.unlockedAchievements[0]
-      pendingAchievement.value = {
-        name: first.achievement.name,
-        icon: first.achievement.icon,
-        xpReward: first.xpAwarded,
-      }
-      showAchievementPopup.value = true
-    }
   }
 }
 
@@ -652,11 +641,6 @@ const onShareInvite = (): void => {
         @close="showLevelUp = false"
       />
 
-      <GamificationAchievementPopup
-        :show="showAchievementPopup"
-        :achievement="pendingAchievement"
-        @close="showAchievementPopup = false"
-      />
     </template>
   </div>
 </template>

@@ -18,7 +18,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // If auth already completed, use backend result
   if (authStore.isAuthenticated) {
     const hasSeenWelcome = authStore.user?.settings?.seenFlags?.includes('welcome') ?? false
-    if (!hasSeenWelcome && to.path !== '/welcome' && to.path !== '/onboarding') {
+    // Only redirect if genuinely a new user — skip for old accounts that predate seenFlags
+    if (!hasSeenWelcome && authStore.isNewUser && to.path !== '/welcome' && to.path !== '/onboarding') {
       return navigateTo('/welcome')
     }
     if (hasSeenWelcome && to.path === '/welcome') {

@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import type { CreateHabitPayload, TimeOfDay } from '~/types/habit'
-import type { CreateGoalPayload, Goal } from '~/types/goal'
-import { Plus, Sparkles } from 'lucide-vue-next'
+import { Plus, Sparkles, Check } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
 const habitsStore = useHabitsStore()
 const gamificationStore = useGamificationStore()
 const statsStore = useStatsStore()
-const goalsStore = useGoalsStore()
 const { hapticNotification } = useTelegram()
 const { showSuccess, showInfo } = useErrorHandler()
 const { t } = useI18n()
@@ -51,18 +49,13 @@ const filteredCount = computed<number>(() =>
 const STREAK_MILESTONES = [7, 14, 30, 60, 100, 365] as const
 
 const showCreateForm = ref<boolean>(false)
-const showGoalForm = ref<boolean>(false)
-const showGoalCompleted = ref<boolean>(false)
-const goalCompletedData = ref<{ goal: Goal; xpEarned: number } | null>(null)
 const showLevelUp = ref<boolean>(false)
 const levelUpLevel = ref<number>(1)
 const showStreakMilestone = ref<boolean>(false)
 const milestoneStreak = ref<number>(0)
-const showAchievementPopup = ref<boolean>(false)
-const achievementQueue = ref<Array<{ name: string; icon: string | null; xpReward: number }>>([])
-const currentAchievement = computed<{ name: string; icon: string | null; xpReward: number } | null>(() =>
-  toValue(achievementQueue).length > 0 ? toValue(achievementQueue)[0] : null,
-)
+const showNoteSheet = ref<boolean>(false)
+const pendingHabitId = ref<number | null>(null)
+const noteText = ref<string>('')
 
 const showPerfectDay = ref<boolean>(false)
 const perfectDayDate = useStorage<string>('perfectDayDate', '')
@@ -70,13 +63,6 @@ const alreadyShownToday = computed<boolean>(() => {
   const today = new Date().toISOString().split('T')[0]
   return toValue(perfectDayDate) === today
 })
-
-const onAchievementClose = (): void => {
-  achievementQueue.value = toValue(achievementQueue).slice(1)
-  if (toValue(achievementQueue).length === 0) {
-    showAchievementPopup.value = false
-  }
-}
 
 // Onboarding tour
 const { hasSeenOnboarding: hasSeenHomeTour, markAsSeen: markHomeTourSeen } = useOnboarding('homeTour')
@@ -93,7 +79,6 @@ const refreshData = async (): Promise<void> => {
     habitsStore.fetchHabits(),
     gamificationStore.fetchProfile(),
     statsStore.fetchSummary(),
-    goalsStore.fetchActiveGoal(),
   ])
 }
 
@@ -129,52 +114,44 @@ const onToggle = async (habitId: number): Promise<void> => {
       },
     })
   } else {
-    const result = await habitsStore.completeHabit(habitId)
-    if (result) {
-      hapticNotification('success')
+    pendingHabitId.value = habitId
+    noteText.value = ''
+    showNoteSheet.value = true
+  }
+}
 
-      await gamificationStore.refreshAfterCompletion()
+const onCompleteWithNote = async (note: string): Promise<void> => {
+  const habitId = toValue(pendingHabitId)
+  if (!habitId) return
+  showNoteSheet.value = false
 
-      if (result.freezeUsed) {
-        showInfo('streakFreeze.used')
-      }
-      if (result.freezeEarned) {
-        showSuccess('streakFreeze.earned')
-      }
+  const result = await habitsStore.completeHabit(habitId, note || undefined)
+  if (result) {
+    hapticNotification('success')
 
-      if (result.leveledUp) {
-        levelUpLevel.value = result.newLevel
-        showLevelUp.value = true
-      }
+    await gamificationStore.refreshAfterCompletion()
 
-      if (result.unlockedAchievements.length > 0) {
-        achievementQueue.value = result.unlockedAchievements.map((a) => ({
-          name: a.achievement.name,
-          icon: a.achievement.icon,
-          xpReward: a.xpAwarded,
-        }))
-        showAchievementPopup.value = true
-      }
+    if (result.freezeUsed) {
+      showInfo('streakFreeze.used')
+    }
+    if (result.freezeEarned) {
+      showSuccess('streakFreeze.earned')
+    }
 
-      const streak = result.habit.currentStreak
-      if (STREAK_MILESTONES.includes(streak as typeof STREAK_MILESTONES[number])) {
-        milestoneStreak.value = streak
-        showStreakMilestone.value = true
-      }
+    if (result.leveledUp) {
+      levelUpLevel.value = result.newLevel
+      showLevelUp.value = true
+    }
 
-      if (result.goalCompleted) {
-        goalCompletedData.value = {
-          goal: result.goalCompleted.goal,
-          xpEarned: result.goalCompleted.xpEarned,
-        }
-        showGoalCompleted.value = true
-        await goalsStore.fetchActiveGoal()
-      }
+    const streak = result.habit.currentStreak
+    if (STREAK_MILESTONES.includes(streak as typeof STREAK_MILESTONES[number])) {
+      milestoneStreak.value = streak
+      showStreakMilestone.value = true
+    }
 
-      if (habitsStore.progressPercent === 100 && habitsStore.totalToday > 0 && !toValue(alreadyShownToday)) {
-        showPerfectDay.value = true
-        perfectDayDate.value = new Date().toISOString().split('T')[0]
-      }
+    if (habitsStore.progressPercent === 100 && habitsStore.totalToday > 0 && !toValue(alreadyShownToday)) {
+      showPerfectDay.value = true
+      perfectDayDate.value = new Date().toISOString().split('T')[0]
     }
   }
 }
@@ -191,22 +168,6 @@ const onCreateHabit = async (data: CreateHabitPayload): Promise<void> => {
   }
 }
 
-const onCreateGoal = async (data: CreateGoalPayload): Promise<void> => {
-  const goal = await goalsStore.createGoal(data)
-  if (goal) {
-    hapticNotification('success')
-    showSuccess('success.goalCreated')
-  }
-}
-
-const onAbandonGoal = async (goalId: number): Promise<void> => {
-  await goalsStore.abandonGoal(goalId)
-}
-
-const onGoalCompletedClose = (): void => {
-  showGoalCompleted.value = false
-  goalCompletedData.value = null
-}
 </script>
 
 <template>
@@ -230,13 +191,6 @@ const onGoalCompletedClose = (): void => {
 
       <!-- Block 2: This Week -->
       <HomeThisWeek />
-
-      <!-- Goal card -->
-      <GoalsGoalCard
-        :active-goal="goalsStore.activeGoal"
-        @create="showGoalForm = true"
-        @abandon="onAbandonGoal"
-      />
 
       <!-- Block 3: My Habits -->
       <div v-if="habitsStore.groupedByTimeOfDay.length > 0">
@@ -304,12 +258,6 @@ const onGoalCompletedClose = (): void => {
         @close="showLevelUp = false"
       />
 
-      <GamificationAchievementPopup
-        :show="showAchievementPopup"
-        :achievement="currentAchievement"
-        @close="onAchievementClose"
-      />
-
       <GamificationStreakMilestoneOverlay
         :show="showStreakMilestone"
         :streak="milestoneStreak"
@@ -321,19 +269,6 @@ const onGoalCompletedClose = (): void => {
         @close="showPerfectDay = false"
       />
 
-      <GoalsGoalForm
-        :open="showGoalForm"
-        @update:open="showGoalForm = $event"
-        @submit="onCreateGoal"
-      />
-
-      <GoalsGoalCompletedOverlay
-        :show="showGoalCompleted"
-        :goal="goalCompletedData?.goal ?? null"
-        :xp-earned="goalCompletedData?.xpEarned ?? 0"
-        @close="onGoalCompletedClose"
-      />
-
       <HabitsHomeTourOverlay
         :show="showHomeTour"
         :streak-el="null"
@@ -342,5 +277,29 @@ const onGoalCompletedClose = (): void => {
         @close="onHomeTourClose"
       />
     </template>
+
+    <Sheet :open="showNoteSheet" @update:open="showNoteSheet = $event">
+      <SheetContent side="bottom" class="rounded-t-2xl glass-heavy">
+        <SheetTitle class="text-base">{{ $t('habit.noteTitle') }}</SheetTitle>
+        <SheetDescription class="sr-only">{{ $t('habit.noteTitle') }}</SheetDescription>
+        <div class="mt-4 space-y-3">
+          <textarea
+            v-model="noteText"
+            :placeholder="$t('habit.notePlaceholder')"
+            :maxlength="500"
+            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none h-24"
+          />
+          <div class="flex gap-2">
+            <Button variant="outline" class="flex-1" @click="onCompleteWithNote('')">
+              {{ $t('habit.noteSkip') }}
+            </Button>
+            <Button class="flex-1 bg-gradient-primary border-0 text-white hover:opacity-90" @click="onCompleteWithNote(noteText)">
+              <Check class="h-4 w-4 mr-1" />
+              {{ $t('habit.noteSubmit') }}
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 </template>

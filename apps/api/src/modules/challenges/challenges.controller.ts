@@ -20,8 +20,6 @@ import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 import { CheckInChallengeDto } from './dto/check-in-challenge.dto';
 import { AbandonChallengeDto } from './dto/abandon-challenge.dto';
-import { Achievement } from '../achievements/entities/achievement.entity';
-
 interface ChallengesListResponse {
   challenges: Array<Challenge & { todayCheckedIn: boolean; isCreator: boolean; participantStatus: ChallengeStatus | null }>;
 }
@@ -34,11 +32,6 @@ interface ChallengeDetailResponse {
   participant: ChallengeParticipant | null;
 }
 
-interface UnlockedAchievementInfo {
-  achievement: Achievement;
-  xpAwarded: number;
-}
-
 interface CheckInResponse {
   day: ChallengeDay;
   challenge: Challenge;
@@ -48,7 +41,6 @@ interface CheckInResponse {
   leveledUp: boolean;
   newLevel: number;
   challengeCompleted: boolean;
-  unlockedAchievements: UnlockedAchievementInfo[];
 }
 
 @Controller('challenges')

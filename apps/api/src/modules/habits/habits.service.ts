@@ -12,18 +12,10 @@ import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
 import { GamificationService } from '../gamification/gamification.service';
-import { AchievementsService } from '../achievements/achievements.service';
-import { Achievement } from '../achievements/entities/achievement.entity';
-import { GoalsService, GoalCompletionResult } from '../goals/goals.service';
 
 const XP_PER_COMPLETION = 10;
 const MAX_STREAK_FREEZES = 3;
 const STREAK_FREEZE_EARN_INTERVAL = 7;
-
-interface UnlockedAchievementInfo {
-  achievement: Achievement;
-  xpAwarded: number;
-}
 
 interface StreakResult {
   newStreak: number;
@@ -37,11 +29,9 @@ interface CompletionResult {
   streakBonusXp: number;
   leveledUp: boolean;
   newLevel: number;
-  unlockedAchievements: UnlockedAchievementInfo[];
   freezeUsed: boolean;
   freezeEarned: boolean;
   streakFreezes: number;
-  goalCompleted: GoalCompletionResult | null;
 }
 
 @Injectable()
@@ -55,8 +45,6 @@ export class HabitsService {
     private readonly usersRepo: Repository<User>,
     private readonly dataSource: DataSource,
     private readonly gamificationService: GamificationService,
-    private readonly achievementsService: AchievementsService,
-    private readonly goalsService: GoalsService,
   ) {}
 
   async findAllByUser(userId: number): Promise<Habit[]> {
@@ -79,10 +67,6 @@ export class HabitsService {
   async create(userId: number, dto: CreateHabitDto): Promise<Habit> {
     const habit = this.habitsRepo.create({ ...dto, userId });
     const saved = await this.habitsRepo.save(habit);
-
-    // Check habit_count achievements (first_step, collector)
-    await this.achievementsService.checkAfterHabitCreated(userId);
-
     return saved;
   }
 
@@ -91,9 +75,6 @@ export class HabitsService {
       this.habitsRepo.create({ ...dto, userId }),
     );
     const saved = await this.habitsRepo.save(habits);
-
-    await this.achievementsService.checkAfterHabitCreated(userId);
-
     return saved;
   }
 
@@ -192,18 +173,6 @@ export class HabitsService {
       id,
     );
 
-    // Check achievements
-    const unlockedAchievements =
-      await this.achievementsService.checkAfterCompletion({
-        userId,
-        habitId: id,
-        currentStreak: habit.currentStreak,
-      });
-
-    // Check goals
-    const goalCompleted =
-      await this.goalsService.checkAfterCompletion(userId);
-
     return {
       completion,
       habit,
@@ -211,11 +180,9 @@ export class HabitsService {
       streakBonusXp,
       leveledUp: xpResult.leveledUp,
       newLevel: xpResult.newLevel,
-      unlockedAchievements,
       freezeUsed: streakData.freezeUsed,
       freezeEarned,
       streakFreezes: user.streakFreezes,
-      goalCompleted,
     };
   }
 
@@ -235,6 +202,15 @@ export class HabitsService {
     const recalculated = await this.recalculateStreak(id, timezone);
     habit.currentStreak = recalculated;
     return this.habitsRepo.save(habit);
+  }
+
+  async getCompletions(id: number, userId: number): Promise<HabitCompletion[]> {
+    await this.findOneOrFail(id, userId);
+    return this.completionsRepo.find({
+      where: { habitId: id, userId },
+      order: { completedDate: 'DESC' },
+      take: 90,
+    });
   }
 
   async getTodayCompletions(

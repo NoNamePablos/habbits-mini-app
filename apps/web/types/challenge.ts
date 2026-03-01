@@ -107,10 +107,6 @@ export interface CheckInResponse {
   leveledUp: boolean
   newLevel: number
   challengeCompleted: boolean
-  unlockedAchievements: {
-    achievement: { id: number; key: string; name: string; icon: string | null; xpReward: number }
-    xpAwarded: number
-  }[]
 }
 
 export interface CreateChallengePayload {

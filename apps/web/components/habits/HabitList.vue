@@ -113,12 +113,12 @@ const onDragEnd = (): void => {
         </Badge>
       </div>
 
-      <div class="space-y-1.5">
+      <TransitionGroup tag="div" name="habit-list" class="space-y-1.5">
         <div
           v-for="(habit, index) in group.habits"
           :key="habit.id"
           draggable="true"
-          class="transition-all duration-150"
+          class="duration-150"
           :class="[
             draggingId === habit.id ? 'opacity-40 scale-[0.98]' : '',
             dragOverId === habit.id && draggingId !== habit.id
@@ -138,7 +138,13 @@ const onDragEnd = (): void => {
             @click="$emit('click', $event)"
           />
         </div>
-      </div>
+      </TransitionGroup>
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.habit-list-move {
+  transition: transform 0.35s ease;
+}
+</style>

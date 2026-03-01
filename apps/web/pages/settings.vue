@@ -119,7 +119,6 @@ const onExportData = (): void => {
     exportedAt: new Date().toISOString(),
     habits: toValue(habitsStore.habits),
     challenges: toValue(challengesStore.challenges),
-    achievements: toValue(gamificationStore.achievements),
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)

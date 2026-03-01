@@ -20,24 +20,9 @@ import { BatchCreateHabitsDto } from './dto/batch-create-habits.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { CompleteHabitDto } from './dto/complete-habit.dto';
 import { ReorderHabitsDto } from './dto/reorder-habits.dto';
-import { Achievement } from '../achievements/entities/achievement.entity';
-import { Goal } from '../goals/entities/goal.entity';
-
 interface HabitsListResponse {
   habits: Habit[];
   todayCompletions: HabitCompletion[];
-}
-
-interface UnlockedAchievementInfo {
-  achievement: Achievement;
-  xpAwarded: number;
-}
-
-interface GoalCompletedInfo {
-  goal: Goal;
-  xpEarned: number;
-  leveledUp: boolean;
-  newLevel: number;
 }
 
 interface CompleteResponse {
@@ -47,8 +32,9 @@ interface CompleteResponse {
   streakBonusXp: number;
   leveledUp: boolean;
   newLevel: number;
-  unlockedAchievements: UnlockedAchievementInfo[];
-  goalCompleted: GoalCompletedInfo | null;
+  freezeUsed: boolean;
+  freezeEarned: boolean;
+  streakFreezes: number;
 }
 
 @Controller('habits')
@@ -87,6 +73,14 @@ export class HabitsController {
     @Body() dto: ReorderHabitsDto,
   ): Promise<void> {
     return this.habitsService.reorder(user.id, dto.orderedIds);
+  }
+
+  @Get(':id/completions')
+  async getCompletions(
+    @TelegramUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<HabitCompletion[]> {
+    return this.habitsService.getCompletions(id, user.id);
   }
 
   @Get(':id')
